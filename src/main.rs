@@ -1,5 +1,16 @@
 use std::collections::HashMap;
+use std::env;
+use std::fs::File;
 use std::io::{self, Write};
+use std::io::{Error, Read};
+
+/// ファイルを読み込む
+fn get_file_contents(name: String) -> Result<String, Error> {
+    let mut f = File::open(name.trim())?;
+    let mut contents = String::new();
+    f.read_to_string(&mut contents)?;
+    Ok(contents)
+}
 
 pub fn input(prompt: &str) -> String {
     print!("{}", prompt.to_string());
@@ -7,6 +18,12 @@ pub fn input(prompt: &str) -> String {
     let mut result = String::new();
     io::stdin().read_line(&mut result).ok();
     return result.trim().parse().ok().unwrap();
+}
+
+#[derive(Clone, Debug)]
+enum Mode {
+    Script,
+    Debug,
 }
 
 #[derive(Clone, Debug)]
@@ -51,13 +68,21 @@ impl Type {
 struct Executor {
     stack: Vec<Type>,
     memory: HashMap<String, Type>,
+    mode: Mode,
 }
 
 impl Executor {
-    fn new() -> Executor {
+    fn new(mode: Mode) -> Executor {
         Executor {
             stack: Vec::new(),
             memory: HashMap::new(),
+            mode,
+        }
+    }
+
+    fn log_print(&mut self, msg: String) {
+        if let Mode::Debug = self.mode {
+            println!("{msg}");
         }
     }
 
@@ -96,7 +121,7 @@ impl Executor {
         };
 
         for item in token {
-            println!("| Stack〔{:?} 〕←  {:?}", self.stack, item);
+            self.log_print(format!("| Stack {:?} ←  {:?}", self.stack, item));
 
             if let Ok(i) = item.parse::<f64>() {
                 self.stack.push(Type::Number(i));
@@ -115,7 +140,7 @@ impl Executor {
 
             if item.contains("(") || item.contains(')') {
                 self.stack
-                    .push(Type::String(item[1 .. item.len()-1].to_string()));
+                    .push(Type::String(item[1..item.len() - 1].to_string()));
                 continue;
             }
 
@@ -152,6 +177,11 @@ impl Executor {
                 "not" => {
                     let b = self.pop().get_bool();
                     self.stack.push(Type::Bool(!b));
+                }
+
+                "input" => {
+                    let prompt = self.pop().get_string();
+                    self.stack.push(Type::String(input(prompt.as_str())));
                 }
 
                 "equal" => {
@@ -217,7 +247,7 @@ impl Executor {
                         .and_modify(|value| *value = data.clone())
                         .or_insert(data);
 
-                    println!("{:?}", self.memory)
+                    self.log_print(format!("{:?}", self.memory))
                 }
                 "mul" => {
                     let b = self.pop().get_number();
@@ -239,12 +269,13 @@ impl Executor {
 
                 "print" => {
                     let a = self.pop().get_string();
-                    println!("出力: {a}");
+                    if let Mode::Debug = self.mode{
+                    println!("出力: {a}");}else{println!("{a}");}
                 }
                 _ => self.stack.push(Type::String(item)),
             }
         }
-        println!("| Stack〔{:?} 〕", self.stack);
+        self.log_print(format!("| Stack〔{:?} 〕", self.stack));
     }
 
     fn pop(&mut self) -> Type {
@@ -253,9 +284,17 @@ impl Executor {
 }
 
 fn main() {
-    println!("Stack Programing Language");
-    let mut executor = Executor::new();
-    loop {
-        executor.execute(input("> "))
+    let args = env::args().collect::<Vec<_>>();
+    if args.len() > 1 {
+        if let Ok(code) = get_file_contents(args[1].clone()) {
+            let mut executor = Executor::new(Mode::Script);
+            executor.execute(code.replace("\n", " ").replace("\r", " "));
+        }
+    } else {
+        println!("Stack Programing Language");
+        let mut executor = Executor::new(Mode::Debug);
+        loop {
+            executor.execute(input("> "))
+        }
     }
 }
