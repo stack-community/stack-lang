@@ -12,35 +12,9 @@ Stackはその名の通りスタック指向のプログラミング言語で、
 - 条件文: If、while
 - 変数の代入と利用
 
-## サンプルコード
+サンプルコードは[こちら](example.stk)をご覧ください。
 
-以下はStackでFizzBuzzを実装した例です:
-
-```stack
-1 (i) var
-(
-    ((FizzBuzz) print )
-    i 15 mod 0 equal if
-
-    (
-        ((Fizz) print )
-        i 3 mod 0 equal if 
-
-        (
-            ((Buzz) print )
-            i 5 mod 0 equal if 
-
-            (i print )
-            i 5 mod 0 equal not if
-        )
-        i 3 mod 0 equal not if
-    )
-    i 15 mod 0 equal not if 
-    i 1 add (i) var
-)
-100 repeat eval
-```
-Stackプログラミング言語のさらなるサンプルや機能についてはソースコードを自由にご覧ください！
+Stackプログラミング言語のさらなる機能についてはソースコードを自由にご覧ください！
 
 ## 貢献
 
