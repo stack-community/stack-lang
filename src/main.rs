@@ -95,8 +95,6 @@ impl Executor {
             elements
         };
 
-        dbg!(token.clone());
-
         for item in token {
             println!("| Stack〔{:?} 〕←  {:?}", self.stack, item);
 
@@ -255,6 +253,7 @@ impl Executor {
 }
 
 fn main() {
+    println!("Stack Programing Language");
     let mut executor = Executor::new();
     loop {
         executor.execute(input("> "))
