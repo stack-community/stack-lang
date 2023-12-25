@@ -25,15 +25,15 @@ pub fn input(prompt: &str) -> String {
 #[derive(Clone, Debug)]
 enum Mode {
     Script, // スクリプト実行
-    Debug,　// デバッグ実行
+    Debug,  // デバッグ実行
 }
 
 // データ型
 #[derive(Clone, Debug)]
 enum Type {
-    Number(f64),　//数値
+    Number(f64),    //数値
     String(String), //文字列
-    Bool(bool),//論理
+    Bool(bool),     //論理
 }
 
 impl Type {
@@ -72,9 +72,9 @@ impl Type {
 }
 
 struct Executor {
-    stack: Vec<Type>, // スタック
+    stack: Vec<Type>,              // スタック
     memory: HashMap<String, Type>, // 変数のメモリ領域
-    mode: Mode, // 実行モード
+    mode: Mode,                    // 実行モード
 }
 
 impl Executor {
@@ -176,7 +176,7 @@ impl Executor {
                 // 文字列を回数分リピート(文字列,数値)->文字列
                 "repeat" => {
                     let count = self.pop().get_number(); // 回数
-                    let text = self.pop().get_string();　//　文字列
+                    let text = self.pop().get_string(); // 文字列
                     self.stack.push(Type::String(text.repeat(count as usize)));
                 }
 
@@ -223,7 +223,7 @@ impl Executor {
                 // 条件分岐(コード:文字列,論理)
                 "if" => {
                     let cond = self.pop().get_bool(); // 条件式
-                    let code = self.pop().get_string();　// コード
+                    let code = self.pop().get_string(); // コード
                     if cond {
                         self.execute(code)
                     };
@@ -232,7 +232,7 @@ impl Executor {
                 // 文字列を式として評価(コード:文字列)
                 "eval" => {
                     let code = self.pop().get_string();
-                    self.execute(code)　
+                    self.execute(code)
                 }
 
                 // 条件が一致してる間ループ(コード:文字列, 条件式:文字列)
@@ -249,7 +249,7 @@ impl Executor {
                         self.execute(code.clone());
                     }
                 }
-                
+
                 // スタックの値をポップ()
                 "pop" => {
                     self.pop();
@@ -271,12 +271,12 @@ impl Executor {
 
                 // 変数定義(データ, 変数名:文字列)
                 "var" => {
-                    let name = self.pop().get_string();　// 変数名
+                    let name = self.pop().get_string(); // 変数名
                     let data = self.pop(); // 値
                     self.memory
                         .entry(name)
                         .and_modify(|value| *value = data.clone())
-                        .or_insert(data); 
+                        .or_insert(data);
 
                     self.log_print(format!("{:?}", self.memory))
                 }
@@ -305,8 +305,11 @@ impl Executor {
                 // 表示出力(文字列)
                 "print" => {
                     let a = self.pop().get_string();
-                    if let Mode::Debug = self.mode{
-                    println!("出力: {a}");}else{println!("{a}");}
+                    if let Mode::Debug = self.mode {
+                        println!("出力: {a}");
+                    } else {
+                        println!("{a}");
+                    }
                 }
                 _ => self.stack.push(Type::String(item)),
             }
@@ -323,7 +326,17 @@ impl Executor {
 fn main() {
     // コマンドライン引数を読み込む
     let args = env::args().collect::<Vec<_>>();
-    if args.len() > 1 {
+    if args.len() > 2 {
+        // ファイルを開く
+        if let Ok(code) = get_file_contents(args[2].clone()) {
+            let mut executor = Executor::new(if args[1].contains("d") {
+                Mode::Debug
+            } else {
+                Mode::Script
+            });
+            executor.execute(code.replace("\n", " ").replace("\r", " "));
+        }
+    } else if args.len() > 1 {
         // ファイルを開く
         if let Ok(code) = get_file_contents(args[1].clone()) {
             let mut executor = Executor::new(Mode::Script);
