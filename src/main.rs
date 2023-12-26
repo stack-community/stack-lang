@@ -358,6 +358,12 @@ impl Executor {
                     self.stack.push(Type::Number(a % b));
                 }
 
+                // 四捨五入(数値)->数値
+                "round" => {
+                    let a = self.pop().get_number();
+                    self.stack.push(Type::Number(a.round()));
+                }
+
                 // 表示出力(文字列)
                 "print" => {
                     let a = self.pop().get_string();
@@ -385,19 +391,34 @@ impl Executor {
 
                 //リストの値を設定(リスト, 数値, データ)
                 "set" => {
-                    let data = self.pop();
                     let index = self.pop().get_number();
                     let mut list = self.pop().get_list();
+                    let data = self.pop();
                     list[index as usize] = data;
                     self.stack.push(Type::List(list));
                 }
 
-                //リストの値を設定(リスト, 数値, データ)
+                //リストに追加(リスト, 追加するデータ)
                 "append" => {
                     let data = self.pop();
                     let mut list = self.pop().get_list();
                     list.push(data);
                     self.stack.push(Type::List(list));
+                }
+
+                "len" => {
+                    let data = self.pop();
+                    self.stack.push(Type::Number(match data {
+                        Type::List(l) => l.len() as f64,
+                        Type::String(s) => s.chars().count() as f64,
+                        _ => 1f64,
+                    }));
+                }
+
+                "copy" => {
+                    let data = self.pop();
+                    self.stack.push(data.clone());
+                    self.stack.push(data);
                 }
 
                 _ => self.stack.push(Type::String(item)),
@@ -408,7 +429,12 @@ impl Executor {
 
     // スタックの値をポップ
     fn pop(&mut self) -> Type {
-        self.stack.pop().expect("スタックの値が足りません")
+        if let Some(value) = self.stack.pop() {
+            value
+        } else {
+            println!("エラー! スタックの値が足りません。デフォルト値を返します");
+            Type::Number(0.0)
+        }
     }
 }
 
@@ -432,7 +458,8 @@ fn main() {
             executor.execute(code.replace("\n", " ").replace("\r", " "));
         }
     } else {
-        println!("Stack Programing Language");
+        println!("Stack プログラミング言語");
+        println!("(c) 2023 梶塚太智. All rights reserved");
         let mut executor = Executor::new(Mode::Debug);
         // REPL実行
         loop {
