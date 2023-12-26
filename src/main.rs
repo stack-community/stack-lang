@@ -306,6 +306,21 @@ impl Executor {
                     }
                 }
 
+                "map" => {
+                    let code = self.pop().get_string();
+                    let vars = self.pop().get_string();
+                    let mut list = self.pop().get_list();
+                    list.reverse();
+
+                    list.iter().for_each(|x| {
+                        self.memory
+                            .entry(vars.clone())
+                            .and_modify(|value| *value = x.clone())
+                            .or_insert(x.clone());
+                        self.execute(code.clone());
+                    });
+                }
+
                 // スタックの値をポップ()
                 "pop" => {
                     self.pop();
