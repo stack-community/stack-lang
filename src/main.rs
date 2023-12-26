@@ -31,9 +31,10 @@ enum Mode {
 // データ型
 #[derive(Clone, Debug)]
 enum Type {
-    Number(f64),    //数値
-    String(String), //文字列
-    Bool(bool),     //論理
+    Number(f64),     //数値
+    String(String),  //文字列
+    Bool(bool),      //論理
+    List(Vec<Type>), //リスト
 }
 
 impl Type {
@@ -43,13 +44,14 @@ impl Type {
             Type::String(s) => s.to_string(),
             Type::Number(i) => i.to_string(),
             Type::Bool(b) => b.to_string(),
+            Type::List(l) => format!("{l:?}"),
         }
     }
 
     // 数値を取得
     fn get_number(&mut self) -> f64 {
         match self {
-            Type::String(s) => s.parse().expect("ふえぇ、変換できないよお"),
+            Type::String(s) => s.parse().expect("変換できません"),
             Type::Number(i) => *i,
             Type::Bool(b) => {
                 if *b {
@@ -58,6 +60,7 @@ impl Type {
                     0.0
                 }
             }
+            Type::List(l) => l.len() as f64,
         }
     }
 
@@ -67,6 +70,16 @@ impl Type {
             Type::String(s) => s.len() != 0,
             Type::Number(i) => *i != 0.0,
             Type::Bool(b) => *b,
+            Type::List(l) => l.len() != 0,
+        }
+    }
+
+    fn get_list(&mut self) -> Vec<Type> {
+        match self {
+            Type::String(s) => vec![Type::String(s.to_string())],
+            Type::Number(i) => vec![Type::Number(*i)],
+            Type::Bool(b) => vec![Type::Bool(*b)],
+            Type::List(l) => l.to_vec(),
         }
     }
 }
@@ -101,6 +114,7 @@ impl Executor {
             let mut elements = Vec::new();
             let mut buffer = String::new();
             let mut in_brackets = 0;
+            let mut in_parentheses = 0;
             let mut in_hash = false;
 
             for c in code.chars() {
@@ -121,7 +135,15 @@ impl Executor {
                         in_hash = false;
                         buffer.push('#');
                     }
-                    ' ' | '　' if !in_hash && in_brackets == 0 => {
+                    '[' if in_brackets == 0 => {
+                        in_parentheses += 1;
+                        buffer.push('[');
+                    }
+                    ']' if in_brackets == 0 => {
+                        in_parentheses -= 1;
+                        buffer.push(']');
+                    }
+                    ' ' | '　' if !in_hash && in_parentheses == 0 && in_brackets == 0 => {
                         if !buffer.is_empty() {
                             elements.push(buffer.clone());
                             buffer.clear();
@@ -140,7 +162,7 @@ impl Executor {
         };
 
         for item in token {
-            self.log_print(format!("| Stack {:?} ←  {:?}", self.stack, item));
+            self.log_print(format!("| Stack {:?} ←  {}", self.stack, item));
 
             // 煤地に変換できたらスタックに積む
             if let Ok(i) = item.parse::<f64>() {
@@ -167,6 +189,26 @@ impl Executor {
                 continue;
             }
 
+            // リスト
+            if item.contains("[") || item.contains(']') {
+                let old_len = self.stack.len();
+                let slice = &item[1..item.len() - 1];
+                let token: Vec<_> = slice.split_whitespace().map(|x| x.to_string()).collect();
+                self.execute(
+                    token
+                        .into_iter()
+                        .map(|x| x.to_string())
+                        .collect::<Vec<_>>()
+                        .join(" "),
+                );
+                let mut list = Vec::new();
+                for _ in old_len..self.stack.len() {
+                    list.push(self.pop());
+                }
+                self.stack.push(Type::List(list));
+                continue;
+            }
+
             // 変数を読み込む
             if let Some(i) = self.memory.get(&item) {
                 self.stack.push(i.clone());
@@ -175,7 +217,7 @@ impl Executor {
 
             if item.contains("#") {
                 self.log_print(format!("※ コメント「{}」", item.replace("#", "")));
-                continue
+                continue;
             }
 
             // コマンドを実行
@@ -325,15 +367,48 @@ impl Executor {
                         println!("{a}");
                     }
                 }
+
+                //リストの値を取得(リスト, 数値)->データ
+                "get" => {
+                    let index = self.pop().get_number();
+                    let list = self.pop().get_list();
+                    self.stack.push(list[index as usize].clone());
+                }
+
+                //リストの値を削除(リスト, 数値)
+                "del" => {
+                    let index = self.pop().get_number();
+                    let mut list = self.pop().get_list();
+                    list.remove(index as usize);
+                    self.stack.push(Type::List(list));
+                }
+
+                //リストの値を設定(リスト, 数値, データ)
+                "set" => {
+                    let data = self.pop();
+                    let index = self.pop().get_number();
+                    let mut list = self.pop().get_list();
+                    list[index as usize] = data;
+                    self.stack.push(Type::List(list));
+                }
+
+                //リストの値を設定(リスト, 数値, データ)
+                "append" => {
+                    let data = self.pop();
+                    let mut list = self.pop().get_list();
+                    list.push(data);
+                    self.stack.push(Type::List(list));
+                }
+
                 _ => self.stack.push(Type::String(item)),
             }
         }
-        self.log_print(format!("| Stack〔{:?} 〕", self.stack));
+        self.log_print(format!("| Stack {:?}", self.stack));
     }
 
     // スタックの値をポップ
     fn pop(&mut self) -> Type {
-        self.stack.pop().expect("Stack underflow")
+        self.stack.pop().expect("スタックの値が足りません")
     }
 }
 
