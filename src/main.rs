@@ -101,6 +101,7 @@ impl Executor {
             let mut elements = Vec::new();
             let mut buffer = String::new();
             let mut in_brackets = 0;
+            let mut in_hash = false;
 
             for c in code.chars() {
                 match c {
@@ -112,7 +113,15 @@ impl Executor {
                         in_brackets -= 1;
                         buffer.push(')');
                     }
-                    ' ' | '　' if in_brackets == 0 => {
+                    '#' if !in_hash => {
+                        in_hash = true;
+                        buffer.push('#');
+                    }
+                    '#' if in_hash => {
+                        in_hash = false;
+                        buffer.push('#');
+                    }
+                    ' ' | '　' if !in_hash && in_brackets == 0 => {
                         if !buffer.is_empty() {
                             elements.push(buffer.clone());
                             buffer.clear();
@@ -162,6 +171,11 @@ impl Executor {
             if let Some(i) = self.memory.get(&item) {
                 self.stack.push(i.clone());
                 continue;
+            }
+
+            if item.contains("#") {
+                self.log_print(format!("※ コメント「{}」", item.replace("#", "")));
+                continue
             }
 
             // コマンドを実行
