@@ -205,6 +205,7 @@ impl Executor {
                 for _ in old_len..self.stack.len() {
                     list.push(self.pop());
                 }
+                list.reverse();
                 self.stack.push(Type::List(list));
                 continue;
             }
@@ -309,8 +310,7 @@ impl Executor {
                 "map" => {
                     let code = self.pop().get_string();
                     let vars = self.pop().get_string();
-                    let mut list = self.pop().get_list();
-                    list.reverse();
+                    let list = self.pop().get_list();
 
                     list.iter().for_each(|x| {
                         self.memory
@@ -331,6 +331,27 @@ impl Executor {
                     let b = self.pop().get_string();
                     let a = self.pop().get_string();
                     self.stack.push(Type::String(a + &b));
+                }
+
+                "split" => {
+                    let key = self.pop().get_string();
+                    let text = self.pop().get_string();
+                    self.stack.push(Type::List(
+                        text.split(&key)
+                            .map(|x| Type::String(x.to_string()))
+                            .collect::<Vec<Type>>(),
+                    ));
+                }
+
+                "join" => {
+                    let key = self.pop().get_string();
+                    let mut list = self.pop().get_list();
+                    self.stack.push(Type::String(
+                        list.iter_mut()
+                            .map(|x| x.get_string())
+                            .collect::<Vec<String>>()
+                            .join(&key),
+                    ))
                 }
 
                 // 引き算(数値,数値)->数値
