@@ -51,7 +51,7 @@ impl Type {
     // 数値を取得
     fn get_number(&mut self) -> f64 {
         match self {
-            Type::String(s) => s.parse().expect("変換できません"),
+            Type::String(s) => s.parse().unwrap_or(0.0),
             Type::Number(i) => *i,
             Type::Bool(b) => {
                 if *b {
@@ -354,6 +354,13 @@ impl Executor {
                     ))
                 }
 
+                "replace" => {
+                    let after = self.pop().get_string();
+                    let before = self.pop().get_string();
+                    let text = self.pop().get_string();
+                    self.stack.push(Type::String(text.replace(&before, &after)))
+                }
+
                 // 引き算(数値,数値)->数値
                 "sub" => {
                     let b = self.pop().get_number();
@@ -469,7 +476,7 @@ impl Executor {
             value
         } else {
             println!("エラー! スタックの値が足りません。デフォルト値を返します");
-            Type::Number(0.0)
+            Type::String("".to_string())
         }
     }
 }
