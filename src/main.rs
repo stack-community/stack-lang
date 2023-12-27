@@ -182,15 +182,17 @@ impl Executor {
                 continue;
             }
 
+            let chars: Vec<char> = item.chars().collect();
+
             // 文字列
-            if item.contains("(") || item.contains(')') {
+            if chars[0] == '(' || chars[chars.len() - 1] == ')' {
                 self.stack
                     .push(Type::String(item[1..item.len() - 1].to_string()));
                 continue;
             }
 
             // リスト
-            if item.contains("[") || item.contains(']') {
+            if chars[0] == '[' || chars[chars.len() - 1] == ']' {
                 let old_len = self.stack.len();
                 let slice = &item[1..item.len() - 1];
                 let token: Vec<_> = slice.split_whitespace().map(|x| x.to_string()).collect();
