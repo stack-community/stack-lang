@@ -451,6 +451,14 @@ impl Executor {
                     self.stack.push(Type::List(list));
                 }
 
+                "insert" => {
+                    let data = self.pop();
+                    let index = self.pop().get_number();
+                    let mut list = self.pop().get_list();
+                    list.insert(index as usize, data);
+                    self.stack.push(Type::List(list));
+                }
+
                 "len" => {
                     let data = self.pop();
                     self.stack.push(Type::Number(match data {
