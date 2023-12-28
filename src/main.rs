@@ -459,6 +459,12 @@ impl Executor {
                     self.stack.push(Type::List(list));
                 }
 
+                "find" => {
+                    let word = self.pop().get_string();
+                    let text = self.pop().get_string();
+                    self.stack.push(Type::Bool(text.contains(&word)))
+                }
+
                 "len" => {
                     let data = self.pop();
                     self.stack.push(Type::Number(match data {
