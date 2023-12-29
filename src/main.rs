@@ -272,6 +272,19 @@ impl Executor {
                     self.stack.push(Type::Bool(a == b));
                 }
 
+                "write-file" => {
+                    let mut file =
+                        File::create(self.pop().get_string()).expect("Failed to create file");
+                    file.write_all(self.pop().get_string().as_bytes())
+                        .expect("Failed to write file");
+                }
+
+                "read-file" => {
+                    let name = self.pop().get_string();
+                    self.stack
+                        .push(Type::String(get_file_contents(name).unwrap()));
+                }
+
                 // 未満か(数値,数値)->論理
                 "less" => {
                     let b = self.pop().get_number();
