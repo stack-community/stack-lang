@@ -4,6 +4,37 @@ use std::fs::File;
 use std::io::{self, Write};
 use std::io::{Error, Read};
 
+fn main() {
+    // コマンドライン引数を読み込む
+    let args = env::args().collect::<Vec<_>>();
+    if args.len() > 2 {
+        // ファイルを開く
+        if let Ok(code) = get_file_contents(args[2].clone()) {
+            let mut executor = Executor::new(if args[1].contains("d") {
+                Mode::Debug
+            } else {
+                Mode::Script
+            });
+            executor.execute(code.replace("\n", " ").replace("\r", " "));
+        }
+    } else if args.len() > 1 {
+        // ファイルを開く
+        if let Ok(code) = get_file_contents(args[1].clone()) {
+            let mut executor = Executor::new(Mode::Script);
+            executor.execute(code.replace("\n", " ").replace("\r", " "));
+        }
+    } else {
+        println!("Stack プログラミング言語");
+        println!("(c) 2023 梶塚太智. All rights reserved");
+        let mut executor = Executor::new(Mode::Debug);
+        // REPL実行
+        loop {
+            executor.execute(input("> "))
+        }
+    }
+}
+
+
 /// ファイルを読み込む
 fn get_file_contents(name: String) -> Result<String, Error> {
     let mut f = File::open(name.trim())?;
@@ -511,36 +542,6 @@ impl Executor {
         } else {
             println!("エラー! スタックの値が足りません。デフォルト値を返します");
             Type::String("".to_string())
-        }
-    }
-}
-
-fn main() {
-    // コマンドライン引数を読み込む
-    let args = env::args().collect::<Vec<_>>();
-    if args.len() > 2 {
-        // ファイルを開く
-        if let Ok(code) = get_file_contents(args[2].clone()) {
-            let mut executor = Executor::new(if args[1].contains("d") {
-                Mode::Debug
-            } else {
-                Mode::Script
-            });
-            executor.execute(code.replace("\n", " ").replace("\r", " "));
-        }
-    } else if args.len() > 1 {
-        // ファイルを開く
-        if let Ok(code) = get_file_contents(args[1].clone()) {
-            let mut executor = Executor::new(Mode::Script);
-            executor.execute(code.replace("\n", " ").replace("\r", " "));
-        }
-    } else {
-        println!("Stack プログラミング言語");
-        println!("(c) 2023 梶塚太智. All rights reserved");
-        let mut executor = Executor::new(Mode::Debug);
-        // REPL実行
-        loop {
-            executor.execute(input("> "))
         }
     }
 }
