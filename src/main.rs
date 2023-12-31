@@ -34,7 +34,6 @@ fn main() {
     }
 }
 
-
 /// ファイルを読み込む
 fn get_file_contents(name: String) -> Result<String, Error> {
     let mut f = File::open(name.trim())?;
@@ -358,7 +357,7 @@ impl Executor {
                     }
                 }
 
-                "map" => {
+                "for" => {
                     let code = self.pop().get_string();
                     let vars = self.pop().get_string();
                     let list = self.pop().get_list();
@@ -370,6 +369,26 @@ impl Executor {
                             .or_insert(x.clone());
                         self.execute(code.clone());
                     });
+                }
+
+                "map" => {
+                    let code = self.pop().get_string();
+                    let vars = self.pop().get_string();
+                    let list = self.pop().get_list();
+
+                    let mut result_list = Vec::new(); // Create a new vector to store the results
+
+                    for x in list.iter() {
+                        self.memory
+                            .entry(vars.clone())
+                            .and_modify(|value| *value = x.clone())
+                            .or_insert(x.clone());
+
+                        self.execute(code.clone());
+                        result_list.push(self.pop()); // Store the result in the new vector
+                    }
+
+                    self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
                 }
 
                 // スタックの値をポップ()
