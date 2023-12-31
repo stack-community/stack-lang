@@ -292,6 +292,11 @@ impl Executor {
                     self.stack.push(Type::Bool(a < b));
                 }
 
+                "exit" => {
+                    let status = self.pop().get_number();
+                    std::process::exit(status as i32);
+                }
+
                 // 条件分岐(コード:文字列,論理)
                 "if" => {
                     let cond = self.pop().get_bool(); // 条件式
