@@ -471,6 +471,12 @@ impl Executor {
                     self.stack.push(Type::Number(a % b));
                 }
 
+                "pow" => {
+                    let b = self.pop().get_number();
+                    let a = self.pop().get_number();
+                    self.stack.push(Type::Number(a.powf(b)));
+                }
+
                 // 四捨五入(数値)->数値
                 "round" => {
                     let a = self.pop().get_number();
