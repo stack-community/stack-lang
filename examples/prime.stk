@@ -1,0 +1,38 @@
+(
+    2 (i) var
+    true (flag) var
+    (
+        ( 
+            false (flag) var
+            return
+        )
+        number i mod 0 equal if
+
+        i 1 add (i) var
+    )
+    (i number less) while
+)
+(prime) var
+
+(素数判定プログラム) print
+(
+    (> ) input (number) var
+    
+    (
+        (終了します) print 
+        0 exit
+    )
+    number (exit) equal if
+    
+    prime eval
+
+    (
+        number (は素数です) concat print 
+    )
+    flag number 2 less not and if
+
+    ( 
+        number (は素数ではありません) concat print
+    )
+    flag not number 2 less or if
+) 100 repeat eval
