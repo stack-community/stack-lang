@@ -68,6 +68,19 @@ enum Type {
 }
 
 impl Type {
+    // ディスプレイに表示
+    fn display(&self) -> String {
+        match self {
+            Type::Number(num) => num.to_string(),
+            Type::String(s) => format!("({})", s),
+            Type::Bool(b) => b.to_string(),
+            Type::List(list) => {
+                let elements: Vec<String> = list.iter().map(|item| item.display()).collect();
+                format!("({})", elements.join(", "))
+            }
+        }
+    }
+
     // 文字列を取得
     fn get_string(&mut self) -> String {
         match self {
@@ -192,7 +205,15 @@ impl Executor {
         };
 
         for item in token {
-            self.log_print(format!("| Stack {:?} ←  {}", self.stack, item));
+            self.log_print(format!(
+                "| Stack〔 {} 〕 ←  {}",
+                self.stack
+                    .iter()
+                    .map(|x| x.display())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                item
+            ));
 
             // 煤地に変換できたらスタックに積む
             if let Ok(i) = item.parse::<f64>() {
@@ -557,7 +578,14 @@ impl Executor {
                 _ => self.stack.push(Type::String(item)),
             }
         }
-        self.log_print(format!("| Stack {:?}", self.stack));
+        self.log_print(format!(
+            "| Stack〔 {} 〕",
+            self.stack
+                .iter()
+                .map(|x| x.display())
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
     }
 
     // スタックの値をポップ
