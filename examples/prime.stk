@@ -4,7 +4,6 @@
     (
         ( 
             false (flag) var
-            return
         )
         number i mod 0 equal if
 
@@ -35,4 +34,4 @@
         number (は素数ではありません) concat print
     )
     flag not number 2 less or if
-) 100 repeat eval
+) (true) while

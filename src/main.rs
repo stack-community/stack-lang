@@ -76,7 +76,7 @@ impl Type {
             Type::Bool(b) => b.to_string(),
             Type::List(list) => {
                 let elements: Vec<String> = list.iter().map(|item| item.display()).collect();
-                format!("({})", elements.join(", "))
+                format!("[{}]", elements.join(", "))
             }
         }
     }
