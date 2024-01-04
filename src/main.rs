@@ -76,7 +76,7 @@ impl Type {
             Type::Bool(b) => b.to_string(),
             Type::List(list) => {
                 let elements: Vec<String> = list.iter().map(|item| item.display()).collect();
-                format!("[{}]", elements.join(", "))
+                format!("[{}]", elements.join(" "))
             }
         }
     }
@@ -211,7 +211,7 @@ impl Executor {
                     .iter()
                     .map(|x| x.display())
                     .collect::<Vec<_>>()
-                    .join(", "),
+                    .join(" | "),
                 item
             ));
 
@@ -579,13 +579,13 @@ impl Executor {
             }
         }
         self.log_print(format!(
-            "| Stack〔 {} 〕",
-            self.stack
-                .iter()
-                .map(|x| x.display())
-                .collect::<Vec<_>>()
-                .join(", ")
-        ));
+                "| Stack〔 {} 〕",
+                self.stack
+                    .iter()
+                    .map(|x| x.display())
+                    .collect::<Vec<_>>()
+                    .join(" | "),
+            ));
     }
 
     // スタックの値をポップ
