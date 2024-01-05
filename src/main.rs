@@ -593,7 +593,7 @@ impl Executor {
         if let Some(value) = self.stack.pop() {
             value
         } else {
-            println!("エラー! スタックの値が足りません。デフォルト値を返します");
+            self.log_print("エラー! スタックの値が足りません。デフォルト値を返します".to_string());
             Type::String("".to_string())
         }
     }
