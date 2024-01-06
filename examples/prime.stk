@@ -21,7 +21,7 @@
         (終了します) print 
         0 exit
     )
-    number (exit) equal if
+    number (exit) find if
     
     prime eval
 
