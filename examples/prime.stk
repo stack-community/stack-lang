@@ -9,7 +9,17 @@
 
         i 1 add (i) var
     )
-    (i number less) while
+    (i number 0.5 pow 1 add less) while
+
+    (
+        false (flag) var
+    )
+    number 2 less if
+
+    (
+        true (flag) var
+    )
+    number 2 less not number 4 less and if
 )
 (prime) var
 
@@ -28,10 +38,10 @@
     (
         number (は素数です) concat print 
     )
-    flag number 2 less not and if
+    flag if
 
     ( 
         number (は素数ではありません) concat print
     )
-    flag not number 2 less or if
+    flag not if
 ) (true) while
