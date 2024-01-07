@@ -9,12 +9,8 @@
         from ( -> ) concat to concat print
         n 1 sub via to from hanoi eval
     )
-    n 2 less not if
+    n 1 less not if
 
-    (
-        from ( -> ) concat to concat print
-    )
-    n 2 less if
 )
 (hanoi) var
 
