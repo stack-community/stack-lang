@@ -87,7 +87,7 @@ impl Type {
             Type::String(s) => s.to_string(),
             Type::Number(i) => i.to_string(),
             Type::Bool(b) => b.to_string(),
-            Type::List(l) => format!("{l:?}"),
+            Type::List(l) => Type::List(l.to_owned()).display(),
         }
     }
 
