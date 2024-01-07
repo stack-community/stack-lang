@@ -150,6 +150,15 @@ impl Executor {
         }
     }
 
+    fn show_variables(&mut self) {
+        self.log_print(format!("メモリ内部の変数 {{ {} }}", 
+            self.memory.clone().iter().map(|(name,value)|{
+                format!("'{name}': {}", value.display())
+            }
+        ).collect::<Vec<String>>().join(", ")
+        ));
+    }
+
     // プログラムを評価する
     fn execute(&mut self, code: String) {
         // トークンを整える
@@ -206,7 +215,7 @@ impl Executor {
 
         for item in token {
             self.log_print(format!(
-                "| Stack〔 {} 〕 ←  {}",
+                "Stack〔 {} 〕 ←  {}",
                 self.stack
                     .iter()
                     .map(|x| x.display())
@@ -468,7 +477,7 @@ impl Executor {
                         .and_modify(|value| *value = data.clone())
                         .or_insert(data);
 
-                    self.log_print(format!("{:?}", self.memory))
+                    self.show_variables()
                 }
 
                 // 掛け算(数値,数値)->数値
@@ -593,7 +602,7 @@ impl Executor {
             }
         }
         self.log_print(format!(
-                "| Stack〔 {} 〕",
+                "Stack〔 {} 〕",
                 self.stack
                     .iter()
                     .map(|x| x.display())
