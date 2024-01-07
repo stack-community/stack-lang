@@ -560,6 +560,20 @@ impl Executor {
                     self.stack.push(Type::Bool(text.contains(&word)))
                 }
 
+                "range" => {
+                    let step = self.pop().get_number();
+                    let max = self.pop().get_number();
+                    let min = self.pop().get_number();
+
+                    let mut range: Vec<Type> = Vec::new();
+                    
+                    for i in (min as usize .. max as usize).step_by(step as usize) {
+                        range.push(Type::Number(i as f64));
+                    }
+                    
+                    self.stack.push(Type::List(range));
+                }
+
                 "len" => {
                     let data = self.pop();
                     self.stack.push(Type::Number(match data {
