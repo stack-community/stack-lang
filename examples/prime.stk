@@ -1,4 +1,5 @@
 (
+    (number) var
     2 (i) var
     true (flag) var
     (
@@ -33,7 +34,7 @@
     )
     number (exit) find if
     
-    prime eval
+    number prime eval
 
     (
         number (は素数です) concat print 
