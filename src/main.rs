@@ -556,11 +556,25 @@ impl Executor {
                 }
 
                 "insert" => {
-                    let data = self.pop();
+                    let mut data = self.pop();
                     let index = self.pop().get_number();
-                    let mut list = self.pop().get_list();
-                    list.insert(index as usize, data);
-                    self.stack.push(Type::List(list));
+                    let result: Type = match self.pop() {
+                        Type::String(s) => {
+                            let mut text = s;
+                            text.insert_str(index as usize, data.get_string().as_str());
+                            Type::String(text)
+                        }
+                        Type::List(l) => {
+                            let mut list = l;
+                            list.insert(index as usize, data);
+                            Type::List(list)
+                        }
+                        _ => {
+                            self.log_print(format!("エラー! シーケンス型でのみ有効です"));
+                            Type::List(vec![])
+                        }
+                    };
+                    self.stack.push(result);
                 }
 
                 "find" => {
