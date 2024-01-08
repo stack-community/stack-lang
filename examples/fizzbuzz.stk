@@ -1,4 +1,5 @@
 ( #FizzBuzzを求める#
+    (i) var
     ((FizzBuzz) print )
     i 15 mod 0 equal if
 
@@ -19,8 +20,7 @@
 )
 (fizzbuzz) var
 
-1 (i) var
-( fizzbuzz eval
-    i 1 add (i) var
-) #ループを100回繰り返す#
-100 repeat eval
+1 101 1 range
+(i) ( #ループを100回繰り返す#
+    i fizzbuzz eval
+) for
