@@ -523,36 +523,89 @@ impl Executor {
                     }
                 }
 
-                //リストの値を取得(リスト, 数値)->データ
-                "get" => {
+                "set" => {
+                    let mut value = self.pop();
                     let index = self.pop().get_number();
-                    let list = self.pop().get_list();
-                    self.stack.push(list[index as usize].clone());
+                    let result: Type = match self.pop() {
+                        Type::String(s) => {
+                            let mut text: Vec<_> = s.chars().collect();
+                            text[index as usize]  = value.get_string().chars().collect::<Vec<_>>()[0];
+                            Type::String(text.iter().map(|x|x.to_string()).collect::<Vec<String>>().join(""))
+                        }
+                        Type::List(l) => {
+                            let mut list = l;
+                            list[index as usize] = value;
+                            Type::List(list)
+                        }
+                        _ => {
+                            self.log_print(format!("エラー! シーケンス型でのみ有効です"));
+                            Type::List(vec![])
+                        }
+                    };
+                    self.stack.push(result);
                 }
 
-                //リストの値を削除(リスト, 数値)
                 "del" => {
                     let index = self.pop().get_number();
-                    let mut list = self.pop().get_list();
-                    list.remove(index as usize);
-                    self.stack.push(Type::List(list));
+                    let result = match self.pop() {
+                        Type::String(s) => {
+                            let mut text = s;
+                            text.remove(index as usize);
+                            Type::String(text)
+                        }
+                        Type::List(l) => {
+                            let mut list = l;
+                            list.remove(index as usize);
+                            Type::List(list)
+                        }
+                        _ => {
+                            self.log_print(format!("エラー! シーケンス型でのみ有効です"));
+                            Type::List(vec![])
+                        }
+                    };
+                    self.stack.push(result);
                 }
 
-                //リストの値を設定(リスト, 数値, データ)
-                "set" => {
+                "get" => {
                     let index = self.pop().get_number();
-                    let mut list = self.pop().get_list();
-                    let data = self.pop();
-                    list[index as usize] = data;
-                    self.stack.push(Type::List(list));
+                    let result: Type = match self.pop() {
+                        Type::String(s) => {
+                            let text: Vec<_> = s.chars().collect();
+                            Type::String(text[index as usize].to_string())
+                        }
+                        Type::List(l) => {
+                            let list = l;
+                            list[index as usize].clone()
+                        }
+                        _ => {
+                            self.log_print(format!("エラー! シーケンス型でのみ有効です"));
+                            Type::List(vec![])
+                        }
+                    };
+                    self.stack.push(result);
                 }
 
                 //リストに追加(リスト, 追加するデータ)
                 "append" => {
-                    let data = self.pop();
-                    let mut list = self.pop().get_list();
-                    list.push(data);
-                    self.stack.push(Type::List(list));
+                    let mut data = self.pop();
+                    let result: Type = match self.pop() {
+                        Type::List(l) => {
+                            let mut l = l;
+                            l.push(data);
+                            Type::List(l)
+                        }
+
+                        Type::String(s) => {
+                            let mut s = s;
+                            s.push_str(data.get_string().as_str());
+                            Type::String(s)
+                        }
+                      _ => {
+                            self.log_print(format!("エラー! シーケンス型でのみ有効です"));
+                            Type::List(vec![])
+                        }
+                    };
+                    self.stack.push(result);
                 }
 
                 "insert" => {
