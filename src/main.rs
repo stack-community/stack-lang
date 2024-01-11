@@ -151,11 +151,14 @@ impl Executor {
     }
 
     fn show_variables(&mut self) {
-        self.log_print(format!("メモリ内部の変数 {{ {} }}", 
-            self.memory.clone().iter().map(|(name,value)|{
-                format!("'{name}': {}", value.display())
-            }
-        ).collect::<Vec<String>>().join(", ")
+        self.log_print(format!(
+            "メモリ内部の変数 {{ {} }}",
+            self.memory
+                .clone()
+                .iter()
+                .map(|(name, value)| { format!("'{name}': {}", value.display()) })
+                .collect::<Vec<String>>()
+                .join(", ")
         ));
     }
 
@@ -529,8 +532,14 @@ impl Executor {
                     let result: Type = match self.pop() {
                         Type::String(s) => {
                             let mut text: Vec<_> = s.chars().collect();
-                            text[index as usize]  = value.get_string().chars().collect::<Vec<_>>()[0];
-                            Type::String(text.iter().map(|x|x.to_string()).collect::<Vec<String>>().join(""))
+                            text[index as usize] =
+                                value.get_string().chars().collect::<Vec<_>>()[0];
+                            Type::String(
+                                text.iter()
+                                    .map(|x| x.to_string())
+                                    .collect::<Vec<String>>()
+                                    .join(""),
+                            )
                         }
                         Type::List(l) => {
                             let mut list = l;
@@ -600,7 +609,7 @@ impl Executor {
                             s.push_str(data.get_string().as_str());
                             Type::String(s)
                         }
-                      _ => {
+                        _ => {
                             self.log_print(format!("エラー! シーケンス型でのみ有効です"));
                             Type::List(vec![])
                         }
@@ -642,11 +651,11 @@ impl Executor {
                     let min = self.pop().get_number();
 
                     let mut range: Vec<Type> = Vec::new();
-                    
-                    for i in (min as usize .. max as usize).step_by(step as usize) {
+
+                    for i in (min as usize..max as usize).step_by(step as usize) {
                         range.push(Type::Number(i as f64));
                     }
-                    
+
                     self.stack.push(Type::List(range));
                 }
 
@@ -669,13 +678,13 @@ impl Executor {
             }
         }
         self.log_print(format!(
-                "Stack〔 {} 〕",
-                self.stack
-                    .iter()
-                    .map(|x| x.display())
-                    .collect::<Vec<_>>()
-                    .join(" | "),
-            ));
+            "Stack〔 {} 〕",
+            self.stack
+                .iter()
+                .map(|x| x.display())
+                .collect::<Vec<_>>()
+                .join(" | "),
+        ));
     }
 
     // スタックの値をポップ
