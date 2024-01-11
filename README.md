@@ -1,21 +1,22 @@
-# Stack プログラミング言語
 
-Stackはその名の通りスタック指向型で、効率的な実行を目指して設計された強力なスクリプト言語です。
+# Stack Programming Language
 
-## 特徴
+Stack is a powerful script language designed with a stack-oriented approach for efficient execution.
 
-- スタック指向型の効率的な実行モデル
-- 分かり易いスペース区切りの容易な構文
-- リスト操作から条件分岐まで豊富なコマンド
-- 柔軟でパワフルなデータ型の仕組み
+## Features
 
-Stackの詳しい機能については、ソースコードをご覧ください。
+- Efficient execution model with stack orientation
+- Clear and easy-to-read syntax with space-separated commands
+- Rich set of commands, from list operations to conditional branching
+- Flexible and powerful data type system
 
-## 貢献
+For detailed features of Stack, please refer to the source code.
 
-貢献は大歓迎です！バグ報告や機能リクエストのためのissueを開いたり、Stackプログラミング言語の改善のためのプルリクエストを提出して頂けると何より幸いです。
+## Contribution
 
-## ライセンス
+Contributions are welcome! Feel free to open issues for bug reports or feature requests, and submit pull requests to enhance the Stack Programming Language.
 
-このプロジェクトは MITライセンスの下オープンソースで公開されています。
-詳細は[LICENSE](LICENSE)ファイルをご覧ください。
+## License
+
+This project is open source and released under the MIT License.
+For details, please see the [LICENSE](LICENSE) file.
