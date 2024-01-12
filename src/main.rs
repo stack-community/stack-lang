@@ -526,6 +526,31 @@ impl Executor {
                     }
                 }
 
+                "sort" => {
+                    let mut list: Vec<String> = self
+                        .pop()
+                        .get_list()
+                        .iter()
+                        .map(|x| x.to_owned().get_string())
+                        .collect();
+                    list.sort();
+                    self.stack.push(Type::List(
+                        list.iter()
+                            .map(|x| Type::String(x.to_string()))
+                            .collect::<Vec<_>>(),
+                    ));
+                }
+
+                "type" => {
+                    let result = match self.pop() {
+                            Type::Number(_) => "number",
+                            Type::String(_) => "string",
+                            Type::Bool(_) => "bool",
+                            Type::List(_) => "list",
+                        }.to_string();
+                    self.stack.push(Type::String(result));
+                }
+
                 "set" => {
                     let mut value = self.pop();
                     let index = self.pop().get_number();
