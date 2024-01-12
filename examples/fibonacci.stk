@@ -1,0 +1,23 @@
+( (n) var
+
+    0 (a) var
+    1 (b) var
+    (a) n 1 equal if
+    (b) n 2 equal if
+
+    (
+        0 n 2 sub 1 range (i) (
+            b (temp) var
+            a b add (b) var
+            temp (a) var
+        ) for
+        b
+    ) 1 n less if
+) (fibonacci) var
+
+0 9 1 range 
+(n) (
+    n 1 add 
+    fibonacci eval 
+    print
+) for
