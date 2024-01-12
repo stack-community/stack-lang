@@ -35,14 +35,11 @@
     number (exit) find if
     
     number prime eval
-
-    (
-        number (は素数です) concat print 
-    )
+    
+    ( number (は素数です) concat print )
     flag if
-
-    ( 
-        number (は素数ではありません) concat print
-    )
+    
+    ( number (は素数ではありません) concat print )
     flag not if
+
 ) (true) while
