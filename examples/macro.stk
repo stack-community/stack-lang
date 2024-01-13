@@ -1,0 +1,26 @@
+(
+    (defolt) var
+    (patern) var
+    (value) var
+    
+    defolt (return) var
+    patern (,) split (i) (
+        i (=>) split (i) var
+        (i 1 get (return) var)
+        value i 0 get eval find if
+    ) for
+    return eval
+) 
+(match) var
+
+(
+    (Python) => (蛇の言語),
+    (Lisp) => (Lispは神の言語なり！),
+    (Stack) => (スタック指向型の強力なスクリプト言語)
+) (patern) var
+
+(
+    (> ) input
+    patern (分けわかめ)
+    match eval print
+) (true) while
