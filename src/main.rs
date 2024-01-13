@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
-use std::io::{self, Write};
-use std::io::{Error, Read};
+use std::io::{self, Error, Read, Write};
 
 fn main() {
     // コマンドライン引数を読み込む
@@ -24,6 +23,7 @@ fn main() {
             executor.execute(code.replace("\n", " ").replace("\r", " "));
         }
     } else {
+        // タイトル表示
         println!("Stack プログラミング言語");
         println!("(c) 2023 梶塚太智. All rights reserved");
         let mut executor = Executor::new(Mode::Debug);
@@ -43,7 +43,7 @@ fn get_file_contents(name: String) -> Result<String, Error> {
 }
 
 // 標準入力
-pub fn input(prompt: &str) -> String {
+fn input(prompt: &str) -> String {
     print!("{}", prompt.to_string());
     io::stdout().flush().unwrap();
     let mut result = String::new();
@@ -67,8 +67,9 @@ enum Type {
     List(Vec<Type>), //リスト
 }
 
+/// メソッド実装
 impl Type {
-    // ディスプレイに表示
+    /// ディスプレイに表示
     fn display(&self) -> String {
         match self {
             Type::Number(num) => num.to_string(),
@@ -81,7 +82,7 @@ impl Type {
         }
     }
 
-    // 文字列を取得
+    /// 文字列を取得
     fn get_string(&mut self) -> String {
         match self {
             Type::String(s) => s.to_string(),
@@ -91,7 +92,7 @@ impl Type {
         }
     }
 
-    // 数値を取得
+    /// 数値を取得
     fn get_number(&mut self) -> f64 {
         match self {
             Type::String(s) => s.parse().unwrap_or(0.0),
@@ -107,7 +108,7 @@ impl Type {
         }
     }
 
-    // 論理値を取得
+    /// 論理値を取得
     fn get_bool(&mut self) -> bool {
         match self {
             Type::String(s) => s.len() != 0,
@@ -117,6 +118,7 @@ impl Type {
         }
     }
 
+    ///　リストを取得
     fn get_list(&mut self) -> Vec<Type> {
         match self {
             Type::String(s) => vec![Type::String(s.to_string())],
@@ -127,6 +129,7 @@ impl Type {
     }
 }
 
+/// プログラム実行を管理
 struct Executor {
     stack: Vec<Type>,              // スタック
     memory: HashMap<String, Type>, // 変数のメモリ領域
@@ -134,7 +137,7 @@ struct Executor {
 }
 
 impl Executor {
-    // コンストラクタ
+    /// コンストラクタ
     fn new(mode: Mode) -> Executor {
         Executor {
             stack: Vec::new(),
@@ -143,13 +146,14 @@ impl Executor {
         }
     }
 
-    // ログ表示
+    /// ログ表示
     fn log_print(&mut self, msg: String) {
         if let Mode::Debug = self.mode {
             println!("{msg}");
         }
     }
 
+    /// メモリを表示
     fn show_variables(&mut self) {
         self.log_print(format!(
             "メモリ内部の変数 {{ {} }}",
@@ -162,7 +166,7 @@ impl Executor {
         ));
     }
 
-    // プログラムを評価する
+    /// プログラムを評価する
     fn execute(&mut self, code: String) {
         // トークンを整える
         let token: Vec<String> = {
@@ -227,34 +231,27 @@ impl Executor {
                 item
             ));
 
-            // 煤地に変換できたらスタックに積む
+            // 数値に変換できたらスタックに積む
             if let Ok(i) = item.parse::<f64>() {
                 self.stack.push(Type::Number(i));
                 continue;
             }
 
-            // 論理値trueをスタックに積む
-            if item == "true" {
-                self.stack.push(Type::Bool(true));
+            // 論理値をスタックに積む
+            if item == "true" || item == "false" {
+                self.stack.push(Type::Bool(item.parse().unwrap_or(true)));
                 continue;
             }
 
-            // 論理値falseをスタックに積む
-            if item == "false" {
-                self.stack.push(Type::Bool(false));
-                continue;
-            }
-
+            // 文字列をスタックに積む
             let chars: Vec<char> = item.chars().collect();
-
-            // 文字列
             if chars[0] == '(' || chars[chars.len() - 1] == ')' {
                 self.stack
                     .push(Type::String(item[1..item.len() - 1].to_string()));
                 continue;
             }
 
-            // リスト
+            // リストを処理
             if chars[0] == '[' || chars[chars.len() - 1] == ']' {
                 let old_len = self.stack.len();
                 let slice = &item[1..item.len() - 1];
@@ -281,6 +278,7 @@ impl Executor {
                 continue;
             }
 
+            // コメントを処理
             if item.contains("#") {
                 self.log_print(format!("※ コメント「{}」", item.replace("#", "")));
                 continue;
@@ -288,53 +286,54 @@ impl Executor {
 
             // コマンドを実行
             match item.as_str() {
-                // 足し算(数値,数値)->数値
+                // 足し算
                 "add" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a + b));
                 }
 
-                // 文字列を回数分リピート(文字列,数値)->文字列
+                // 文字列を回数分リピート
                 "repeat" => {
                     let count = self.pop().get_number(); // 回数
                     let text = self.pop().get_string(); // 文字列
                     self.stack.push(Type::String(text.repeat(count as usize)));
                 }
 
-                // AND演算(論理,論理)->論理
+                // AND論理演算
                 "and" => {
                     let b = self.pop().get_bool();
                     let a = self.pop().get_bool();
                     self.stack.push(Type::Bool(a && b));
                 }
 
-                // OR演算(論理,論理)->論理
+                // OR論理演算
                 "or" => {
                     let b = self.pop().get_bool();
                     let a = self.pop().get_bool();
                     self.stack.push(Type::Bool(a || b));
                 }
 
-                // NOT演算(論理)->論理
+                // NOT論理演算
                 "not" => {
                     let b = self.pop().get_bool();
                     self.stack.push(Type::Bool(!b));
                 }
 
-                // 標準入力(文字列)->文字列
+                // 標準入力
                 "input" => {
                     let prompt = self.pop().get_string(); //プロンプト
                     self.stack.push(Type::String(input(prompt.as_str())));
                 }
 
-                // 等しいか(文字列,文字列)->論理
+                // 等しいか
                 "equal" => {
                     let b = self.pop().get_string();
                     let a = self.pop().get_string();
                     self.stack.push(Type::Bool(a == b));
                 }
 
+                // ファイル書き込み
                 "write-file" => {
                     let mut file =
                         File::create(self.pop().get_string()).expect("Failed to create file");
@@ -342,25 +341,27 @@ impl Executor {
                         .expect("Failed to write file");
                 }
 
+                // ファイル読み込み
                 "read-file" => {
                     let name = self.pop().get_string();
                     self.stack
                         .push(Type::String(get_file_contents(name).unwrap()));
                 }
 
-                // 未満か(数値,数値)->論理
+                // 未満か
                 "less" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Bool(a < b));
                 }
 
+                // プロセスを終了
                 "exit" => {
                     let status = self.pop().get_number();
                     std::process::exit(status as i32);
                 }
 
-                // 条件分岐(コード:文字列,論理)
+                // 条件分岐
                 "if" => {
                     let cond = self.pop().get_bool(); // 条件式
                     let code = self.pop().get_string(); // コード
@@ -369,13 +370,13 @@ impl Executor {
                     };
                 }
 
-                // 文字列を式として評価(コード:文字列)
+                // 文字列を式として評価
                 "eval" => {
                     let code = self.pop().get_string();
                     self.execute(code)
                 }
 
-                // 条件が一致してる間ループ(コード:文字列, 条件式:文字列)
+                // 条件が一致してる間ループ
                 "while" => {
                     let cond = self.pop().get_string();
                     let code = self.pop().get_string();
@@ -390,6 +391,7 @@ impl Executor {
                     }
                 }
 
+                // イテレート
                 "for" => {
                     let code = self.pop().get_string();
                     let vars = self.pop().get_string();
@@ -404,6 +406,7 @@ impl Executor {
                     });
                 }
 
+                // マッピング処理
                 "map" => {
                     let code = self.pop().get_string();
                     let vars = self.pop().get_string();
@@ -424,18 +427,19 @@ impl Executor {
                     self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
                 }
 
-                // スタックの値をポップ()
+                // スタックの値をポップ
                 "pop" => {
                     self.pop();
                 }
 
-                // 文字列を結合(文字列, 文字列)->文字列
+                // 文字列を結合
                 "concat" => {
                     let b = self.pop().get_string();
                     let a = self.pop().get_string();
                     self.stack.push(Type::String(a + &b));
                 }
 
+                // 文字列を分割
                 "split" => {
                     let key = self.pop().get_string();
                     let text = self.pop().get_string();
@@ -446,6 +450,7 @@ impl Executor {
                     ));
                 }
 
+                // リストを結合した文字列を生成
                 "join" => {
                     let key = self.pop().get_string();
                     let mut list = self.pop().get_list();
@@ -457,6 +462,7 @@ impl Executor {
                     ))
                 }
 
+                // 文字列の置換
                 "replace" => {
                     let after = self.pop().get_string();
                     let before = self.pop().get_string();
@@ -464,14 +470,14 @@ impl Executor {
                     self.stack.push(Type::String(text.replace(&before, &after)))
                 }
 
-                // 引き算(数値,数値)->数値
+                // 引き算
                 "sub" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a - b));
                 }
 
-                // 変数定義(データ, 変数名:文字列)
+                // 変数の定義
                 "var" => {
                     let name = self.pop().get_string(); // 変数名
                     let data = self.pop(); // 値
@@ -483,40 +489,41 @@ impl Executor {
                     self.show_variables()
                 }
 
-                // 掛け算(数値,数値)->数値
+                // 掛け算
                 "mul" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a * b));
                 }
 
-                // 割り算(数値,数値)->数値
+                // 割り算
                 "div" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a / b));
                 }
 
-                // 商の余り(数値,数値)->数値
+                // 商の余り
                 "mod" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a % b));
                 }
 
+                // べき乗
                 "pow" => {
                     let b = self.pop().get_number();
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a.powf(b)));
                 }
 
-                // 四捨五入(数値)->数値
+                // 四捨五入
                 "round" => {
                     let a = self.pop().get_number();
                     self.stack.push(Type::Number(a.round()));
                 }
 
-                // 表示出力(文字列)
+                // 表示出力
                 "print" => {
                     let a = self.pop().get_string();
                     if let Mode::Debug = self.mode {
@@ -526,6 +533,7 @@ impl Executor {
                     }
                 }
 
+                // 並び替え
                 "sort" => {
                     let mut list: Vec<String> = self
                         .pop()
@@ -541,16 +549,19 @@ impl Executor {
                     ));
                 }
 
+                // データ型の取得
                 "type" => {
                     let result = match self.pop() {
-                            Type::Number(_) => "number",
-                            Type::String(_) => "string",
-                            Type::Bool(_) => "bool",
-                            Type::List(_) => "list",
-                        }.to_string();
+                        Type::Number(_) => "number",
+                        Type::String(_) => "string",
+                        Type::Bool(_) => "bool",
+                        Type::List(_) => "list",
+                    }
+                    .to_string();
                     self.stack.push(Type::String(result));
                 }
 
+                // シーケンス値を設定
                 "set" => {
                     let mut value = self.pop();
                     let index = self.pop().get_number();
@@ -579,12 +590,14 @@ impl Executor {
                     self.stack.push(result);
                 }
 
+                // メモリ開放
                 "free" => {
                     let name = self.pop().get_string();
                     self.memory.remove(name.as_str());
                     self.show_variables();
                 }
 
+                // シーケンス値を削除
                 "del" => {
                     let index = self.pop().get_number();
                     let result = match self.pop() {
@@ -606,6 +619,7 @@ impl Executor {
                     self.stack.push(result);
                 }
 
+                // シーケンス値を取得
                 "get" => {
                     let index = self.pop().get_number();
                     let result: Type = match self.pop() {
@@ -625,7 +639,7 @@ impl Executor {
                     self.stack.push(result);
                 }
 
-                //リストに追加(リスト, 追加するデータ)
+                //リストに追加
                 "append" => {
                     let mut data = self.pop();
                     let result: Type = match self.pop() {
@@ -648,6 +662,7 @@ impl Executor {
                     self.stack.push(result);
                 }
 
+                // シーケンスに挿入
                 "insert" => {
                     let mut data = self.pop();
                     let index = self.pop().get_number();
@@ -670,12 +685,14 @@ impl Executor {
                     self.stack.push(result);
                 }
 
+                // 含まれているか
                 "find" => {
                     let word = self.pop().get_string();
                     let text = self.pop().get_string();
                     self.stack.push(Type::Bool(text.contains(&word)))
                 }
 
+                // 範囲を生成
                 "range" => {
                     let step = self.pop().get_number();
                     let max = self.pop().get_number();
@@ -690,6 +707,7 @@ impl Executor {
                     self.stack.push(Type::List(range));
                 }
 
+                // シーケンスの長さ
                 "len" => {
                     let data = self.pop();
                     self.stack.push(Type::Number(match data {
@@ -699,6 +717,7 @@ impl Executor {
                     }));
                 }
 
+                // 値のコピー
                 "copy" => {
                     let data = self.pop();
                     self.stack.push(data.clone());
@@ -718,7 +737,7 @@ impl Executor {
         ));
     }
 
-    // スタックの値をポップ
+    /// スタックの値をポップ
     fn pop(&mut self) -> Type {
         if let Some(value) = self.stack.pop() {
             value
