@@ -579,6 +579,12 @@ impl Executor {
                     self.stack.push(result);
                 }
 
+                "free" => {
+                    let name = self.pop().get_string();
+                    self.memory.remove(name.as_str());
+                    self.show_variables();
+                }
+
                 "del" => {
                     let index = self.pop().get_number();
                     let result = match self.pop() {
