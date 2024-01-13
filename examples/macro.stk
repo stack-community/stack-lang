@@ -4,23 +4,26 @@
     (value) var
     
     defolt (return) var
-    patern (,) split (i) (
-        i (=>) split (i) var
-        (i 1 get (return) var)
-        value i 0 get eval find if
+    patern (,) split (token) (
+        token (=>) split (token) var
+        (token 1 get eval (return) var)
+        value token 0 get eval find if
     ) for
     return eval
 ) 
 (match) var
 
-(
-    (Python) => (蛇の言語),
-    (Lisp) => (Lispは神の言語なり！),
-    (Stack) => (スタック指向型の強力なスクリプト言語)
-) (patern) var
-
-(
-    (> ) input
-    patern (分けわかめ)
-    match eval print
-) (true) while
+[5.6 true (hello) ] (item) (
+    item type (
+        (number) => (
+            (平方根は)　item 0.5 pow　concat print
+        ),
+        (bool) => (
+            (NOT演算すると) item not concat  print
+        ),
+        (string) => (
+            (長さは)　item　len  concat print
+        )
+    ) () 
+    match eval
+) for
