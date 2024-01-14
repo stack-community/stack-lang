@@ -61,7 +61,7 @@ enum Mode {
     Debug,  // デバッグ実行
 }
 
-// データ型
+/// データ型
 #[derive(Clone, Debug)]
 enum Type {
     Number(f64),     //数値
