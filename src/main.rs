@@ -454,7 +454,7 @@ impl Executor {
             }
 
             // スタックの値をポップ
-            "pop_stack" => {
+            "pop" => {
                 self.pop_stack();
             }
 
