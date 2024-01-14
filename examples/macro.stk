@@ -7,7 +7,7 @@
     patern (,) split (token) (
         token (=>) split (token) var
         (token 1 get eval (return) var)
-        value token 0 get eval find if
+        () value token 0 get eval find if
     ) for
     return eval
 ) 

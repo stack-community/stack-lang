@@ -12,7 +12,7 @@
             temp (a) var
         ) for
         b
-    ) 1 n less if
+    ) () 1 n less if
 ) (fibonacci) var
 
 0 9 1 range 

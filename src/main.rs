@@ -364,10 +364,13 @@ impl Executor {
 
                 // 条件分岐
                 "if" => {
-                    let cond = self.pop().get_bool(); // 条件式
-                    let code = self.pop().get_string(); // コード
-                    if cond {
-                        self.execute(code)
+                    let condition = self.pop().get_bool(); // 条件式
+                    let code_else = self.pop().get_string(); // elseコード
+                    let code_if = self.pop().get_string(); // ifコード
+                    if condition {
+                        self.execute(code_if)
+                    } else {
+                        self.execute(code_else)
                     };
                 }
 
