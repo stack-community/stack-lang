@@ -1,5 +1,4 @@
-( #FizzBuzzを求める#
-    (i) var
+( (i) var
     ((FizzBuzz) print )
     ( 
         ((Fizz) print )
@@ -14,7 +13,6 @@
 )
 (fizzbuzz) var
 
-1 101 1 range
-(i) ( #ループを100回繰り返す#
+1 101 1 range (i) (
     i fizzbuzz eval
 ) for
