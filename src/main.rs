@@ -9,12 +9,13 @@ fn main() {
     if args.len() > 2 {
         // ファイルを開く
         if let Ok(code) = get_file_contents(args[2].clone()) {
-            let mut executor = Executor::new(if args[1].contains("d") {
-                Mode::Debug
+            if args[1].contains("d") {
+                let mut executor = Executor::new(Mode::Debug);
+                executor.execute(code.replace("\n", " ").replace("\r", " "));
             } else {
-                Mode::Script
-            });
-            executor.execute(code.replace("\n", " ").replace("\r", " "));
+                let mut executor = Executor::new(Mode::Script);
+                executor.execute(code.replace("\n", " ").replace("\r", " "));
+            }
         }
     } else if args.len() > 1 {
         // ファイルを開く
