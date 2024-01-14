@@ -9,6 +9,11 @@
         (token 1 get eval (return) var)
         () value token 0 get eval find if
     ) for
+    
+    (token) free
+    (patern) free
+    (defolt) free
+
     return eval
 ) 
 (match) var
@@ -21,13 +26,13 @@
 list (item) (
     item type (
         (number) => (
-            (平方根は)　item 0.5 pow　concat print
+            item　(の平方根は) concat item 0.5 pow　concat print
         ),
         (bool) => (
-            (NOT演算すると) item not concat  print
+            item (をNOT演算すると) concat item not concat print
         ),
         (string) => (
-            (長さは)　item　len  concat print
+            item (の長さは)　concat item　len  concat print
         )
     ) () 
     match eval
