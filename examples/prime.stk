@@ -17,7 +17,7 @@
 
                 i 1 add (i) var
             )
-            (i number 0.5 pow 1 add less) while
+            (i number 0.5 pow 1 add less flag and) while
         ) number 2 mod 0 equal number 3 mod 0 equal or if
     ) number 4 less if
 )
