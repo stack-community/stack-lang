@@ -13,7 +13,12 @@
 ) 
 (match) var
 
-[5.6 true (hello) ] (item) (
+[
+    5.6 true (hello)
+    64 35 false (梶塚太智)
+] (list) var
+
+list (item) (
     item type (
         (number) => (
             (平方根は)　item 0.5 pow　concat print
