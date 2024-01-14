@@ -2,25 +2,21 @@
     (number) var
     2 (i) var
     true (flag) var
-    (
-        ( 
-            false (flag) var
+    
+    (   (false (flag) var)
+        (true (flag) var)
+        number 2 less if
+    ) (
+        (
+            ( 
+                false (flag) var
+            ) ()
+            number i mod 0 equal if
+
+            i 1 add (i) var
         )
-        number i mod 0 equal if
-
-        i 1 add (i) var
-    )
-    (i number 0.5 pow 1 add less) while
-
-    (
-        false (flag) var
-    )
-    number 2 less if
-
-    (
-        true (flag) var
-    )
-    number 2 less not number 4 less and if
+        (i number 0.5 pow 1 add less) while
+    ) number 4 less if
 )
 (prime) var
 
@@ -31,15 +27,11 @@
     (
         (終了します) print 
         0 exit
+    ) (
+        number prime eval    
+        ( number (は素数です) concat print )    
+        ( number (は素数ではありません) concat print )
+        flag if
     )
     number (exit) find if
-    
-    number prime eval
-    
-    ( number (は素数です) concat print )
-    flag if
-    
-    ( number (は素数ではありません) concat print )
-    flag not if
-
 ) (true) while
