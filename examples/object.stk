@@ -1,0 +1,48 @@
+(
+    (member) var
+    (name) var
+
+    name eval (name) var
+    
+    member (,) split (token) (
+        token (:) split
+    ) map (member) var    
+
+    (<Object ) name concat (>) concat name var
+    
+    member (i) (
+        i 1 get eval
+        name (.) concat i 0 get eval concat
+        var
+    ) for
+
+) (object) var
+
+
+(counter) (
+    (number): 0,
+
+    (show): (
+        counter.number print
+    ),
+
+    (count): (
+        counter.number 1 add (counter.number) var
+    ),
+
+    (do): (
+        (max) var (
+            counter.count eval
+            counter.show eval
+        ) (counter.number max less) while 
+    ),
+
+    (reset): (
+        (Reseted!) print
+        0 (counter.number) var
+    )
+) object eval
+
+counter print
+counter.reset eval
+3 counter.do eval
