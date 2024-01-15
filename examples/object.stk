@@ -15,7 +15,6 @@
         name (.) concat i 0 get eval concat
         var
     ) for
-
 ) (object) var
 
 
