@@ -124,7 +124,11 @@ impl Type {
     ///　リストを取得
     fn get_list(&mut self) -> Vec<Type> {
         match self {
-            Type::String(s) => vec![Type::String(s.to_string())],
+            Type::String(s) => s
+                .to_string()
+                .chars()
+                .map(|x| Type::String(x.to_string()))
+                .collect::<Vec<Type>>(),
             Type::Number(i) => vec![Type::Number(*i)],
             Type::Bool(b) => vec![Type::Bool(*b)],
             Type::List(l) => l.to_vec(),
@@ -575,6 +579,12 @@ impl Executor {
                 ));
             }
 
+            "reverse" => {
+                let mut list = self.pop_stack().get_list();
+                list.reverse();
+                self.stack.push(Type::List(list));
+            }
+
             // データ型の取得
             "type" => {
                 let result = match self.pop_stack() {
@@ -747,6 +757,14 @@ impl Executor {
                 let data = self.pop_stack();
                 self.stack.push(data.clone());
                 self.stack.push(data);
+            }
+
+            // 値の交換
+            "swap" => {
+                let b = self.pop_stack();
+                let a = self.pop_stack();
+                self.stack.push(b);
+                self.stack.push(a);
             }
 
             // コマンドとして認識されない場合は文字列とする
