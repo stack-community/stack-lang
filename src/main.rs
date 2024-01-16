@@ -313,7 +313,7 @@ impl Executor {
     /// コマンドを実行する
     fn execute_command(&mut self, command: String) {
         match command.as_str() {
-            // 算術演算コマンド
+            // 演算コマンド
 
             // 足し算
             "add" => {
@@ -361,6 +361,40 @@ impl Executor {
             "round" => {
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a.round()));
+            }
+
+            // AND論理演算
+            "and" => {
+                let b = self.pop_stack().get_bool();
+                let a = self.pop_stack().get_bool();
+                self.stack.push(Type::Bool(a && b));
+            }
+
+            // OR論理演算
+            "or" => {
+                let b = self.pop_stack().get_bool();
+                let a = self.pop_stack().get_bool();
+                self.stack.push(Type::Bool(a || b));
+            }
+
+            // NOT論理演算
+            "not" => {
+                let b = self.pop_stack().get_bool();
+                self.stack.push(Type::Bool(!b));
+            }
+
+            // 等しいか
+            "equal" => {
+                let b = self.pop_stack().get_string();
+                let a = self.pop_stack().get_string();
+                self.stack.push(Type::Bool(a == b));
+            }
+
+            // 未満か
+            "less" => {
+                let b = self.pop_stack().get_number();
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Bool(a < b));
             }
 
             // 文字列操作コマンド
@@ -418,6 +452,7 @@ impl Executor {
             }
 
             // 入出力コマンド
+
             // ファイル書き込み
             "write-file" => {
                 let mut file =
@@ -447,44 +482,6 @@ impl Executor {
                 } else {
                     println!("{a}");
                 }
-            }
-
-            // 論理演算コマンド
-
-            // AND論理演算
-            "and" => {
-                let b = self.pop_stack().get_bool();
-                let a = self.pop_stack().get_bool();
-                self.stack.push(Type::Bool(a && b));
-            }
-
-            // OR論理演算
-            "or" => {
-                let b = self.pop_stack().get_bool();
-                let a = self.pop_stack().get_bool();
-                self.stack.push(Type::Bool(a || b));
-            }
-
-            // NOT論理演算
-            "not" => {
-                let b = self.pop_stack().get_bool();
-                self.stack.push(Type::Bool(!b));
-            }
-
-            // 比較演算コマンド
-
-            // 等しいか
-            "equal" => {
-                let b = self.pop_stack().get_string();
-                let a = self.pop_stack().get_string();
-                self.stack.push(Type::Bool(a == b));
-            }
-
-            // 未満か
-            "less" => {
-                let b = self.pop_stack().get_number();
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Bool(a < b));
             }
 
             // 制御コマンド
