@@ -22,7 +22,7 @@ fn main() {
     } else if args.len() > 1 {
         // ファイルを開く
         if let Ok(code) = get_file_contents(args[1].clone()) {
-            let mut executor = Executor::new(Mode::Script); //デフォルメ値はスクリプト実行
+            let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
             executor.evaluate_program(code.replace("\n", " ").replace("\r", " "));
         }
     } else {
