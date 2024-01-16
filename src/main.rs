@@ -256,14 +256,14 @@ impl Executor {
 
             // 文字列をスタックに積む
             let chars: Vec<char> = token.chars().collect();
-            if chars[0] == '(' || chars[chars.len() - 1] == ')' {
+            if chars[0] == '(' && chars[chars.len() - 1] == ')' {
                 self.stack
                     .push(Type::String(token[1..token.len() - 1].to_string()));
                 continue;
             }
 
             // リストを処理
-            if chars[0] == '[' || chars[chars.len() - 1] == ']' {
+            if chars[0] == '[' && chars[chars.len() - 1] == ']' {
                 let old_len = self.stack.len();
                 let slice = &token[1..token.len() - 1];
                 let token: Vec<_> = slice.split_whitespace().map(|x| x.to_string()).collect();
