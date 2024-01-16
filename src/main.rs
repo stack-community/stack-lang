@@ -640,6 +640,29 @@ impl Executor {
                 self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
             }
 
+            // フィルタ処理
+            "filter" => {
+                let code = self.pop_stack().get_string();
+                let vars = self.pop_stack().get_string();
+                let list = self.pop_stack().get_list();
+
+                let mut result_list = Vec::new(); // Create a new vector to store the results
+
+                for x in list.iter() {
+                    self.memory
+                        .entry(vars.clone())
+                        .and_modify(|value| *value = x.clone())
+                        .or_insert(x.clone());
+
+                    self.evaluate_program(code.clone());
+                    if self.pop_stack().get_bool() {
+                        result_list.push(x.clone()); // Store the result in the new vector
+                    }
+                }
+
+                self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
+            }
+
             // 範囲を生成
             "range" => {
                 let step = self.pop_stack().get_number();
