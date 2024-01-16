@@ -313,6 +313,8 @@ impl Executor {
     /// コマンドを実行する
     fn execute_command(&mut self, command: String) {
         match command.as_str() {
+            // 算術演算コマンド
+
             // 足し算
             "add" => {
                 let b = self.pop_stack().get_number();
@@ -320,12 +322,134 @@ impl Executor {
                 self.stack.push(Type::Number(a + b));
             }
 
+            // 引き算
+            "sub" => {
+                let b = self.pop_stack().get_number();
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Number(a - b));
+            }
+
+            // 掛け算
+            "mul" => {
+                let b = self.pop_stack().get_number();
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Number(a * b));
+            }
+
+            // 割り算
+            "div" => {
+                let b = self.pop_stack().get_number();
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Number(a / b));
+            }
+
+            // 商の余り
+            "mod" => {
+                let b = self.pop_stack().get_number();
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Number(a % b));
+            }
+
+            // べき乗
+            "pow" => {
+                let b = self.pop_stack().get_number();
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Number(a.powf(b)));
+            }
+
+            // 四捨五入
+            "round" => {
+                let a = self.pop_stack().get_number();
+                self.stack.push(Type::Number(a.round()));
+            }
+
+            // 文字列操作コマンド
+
             // 文字列を回数分リピート
             "repeat" => {
                 let count = self.pop_stack().get_number(); // 回数
                 let text = self.pop_stack().get_string(); // 文字列
                 self.stack.push(Type::String(text.repeat(count as usize)));
             }
+
+            // 文字列を結合
+            "concat" => {
+                let b = self.pop_stack().get_string();
+                let a = self.pop_stack().get_string();
+                self.stack.push(Type::String(a + &b));
+            }
+
+            // 文字列の置換
+            "replace" => {
+                let after = self.pop_stack().get_string();
+                let before = self.pop_stack().get_string();
+                let text = self.pop_stack().get_string();
+                self.stack.push(Type::String(text.replace(&before, &after)))
+            }
+
+            // 文字列を分割
+            "split" => {
+                let key = self.pop_stack().get_string();
+                let text = self.pop_stack().get_string();
+                self.stack.push(Type::List(
+                    text.split(&key)
+                        .map(|x| Type::String(x.to_string()))
+                        .collect::<Vec<Type>>(),
+                ));
+            }
+
+            // リストを結合した文字列を生成
+            "join" => {
+                let key = self.pop_stack().get_string();
+                let mut list = self.pop_stack().get_list();
+                self.stack.push(Type::String(
+                    list.iter_mut()
+                        .map(|x| x.get_string())
+                        .collect::<Vec<String>>()
+                        .join(&key),
+                ))
+            }
+
+            // 含まれているか
+            "find" => {
+                let word = self.pop_stack().get_string();
+                let text = self.pop_stack().get_string();
+                self.stack.push(Type::Bool(text.contains(&word)))
+            }
+
+            // 入出力コマンド
+            // ファイル書き込み
+            "write-file" => {
+                let mut file =
+                    File::create(self.pop_stack().get_string()).expect("Failed to create file");
+                file.write_all(self.pop_stack().get_string().as_bytes())
+                    .expect("Failed to write file");
+            }
+
+            // ファイル読み込み
+            "read-file" => {
+                let name = self.pop_stack().get_string();
+                self.stack
+                    .push(Type::String(get_file_contents(name).unwrap()));
+            }
+
+            // 標準入力
+            "input" => {
+                let prompt = self.pop_stack().get_string(); //プロンプト
+                self.stack.push(Type::String(input(prompt.as_str())));
+            }
+
+            // 標準出力
+            "print" => {
+                let a = self.pop_stack().get_string();
+                if let Mode::Debug = self.mode {
+                    println!("出力: {a}");
+                } else {
+                    println!("{a}");
+                }
+            }
+
+            // 論理演算コマンド
 
             // AND論理演算
             "and" => {
@@ -347,32 +471,13 @@ impl Executor {
                 self.stack.push(Type::Bool(!b));
             }
 
-            // 標準入力
-            "input" => {
-                let prompt = self.pop_stack().get_string(); //プロンプト
-                self.stack.push(Type::String(input(prompt.as_str())));
-            }
+            // 比較演算コマンド
 
             // 等しいか
             "equal" => {
                 let b = self.pop_stack().get_string();
                 let a = self.pop_stack().get_string();
                 self.stack.push(Type::Bool(a == b));
-            }
-
-            // ファイル書き込み
-            "write-file" => {
-                let mut file =
-                    File::create(self.pop_stack().get_string()).expect("Failed to create file");
-                file.write_all(self.pop_stack().get_string().as_bytes())
-                    .expect("Failed to write file");
-            }
-
-            // ファイル読み込み
-            "read-file" => {
-                let name = self.pop_stack().get_string();
-                self.stack
-                    .push(Type::String(get_file_contents(name).unwrap()));
             }
 
             // 未満か
@@ -382,10 +487,12 @@ impl Executor {
                 self.stack.push(Type::Bool(a < b));
             }
 
-            // プロセスを終了
-            "exit" => {
-                let status = self.pop_stack().get_number();
-                std::process::exit(status as i32);
+            // 制御コマンド
+
+            // 文字列を式として評価
+            "eval" => {
+                let code = self.pop_stack().get_string();
+                self.evaluate_program(code)
             }
 
             // 条件分岐
@@ -398,12 +505,6 @@ impl Executor {
                 } else {
                     self.evaluate_program(code_else)
                 };
-            }
-
-            // 文字列を式として評価
-            "eval" => {
-                let code = self.pop_stack().get_string();
-                self.evaluate_program(code)
             }
 
             // 条件が一致してる間ループ
@@ -419,6 +520,91 @@ impl Executor {
                     }
                     self.evaluate_program(code.clone());
                 }
+            }
+
+            // プロセスを終了
+            "exit" => {
+                let status = self.pop_stack().get_number();
+                std::process::exit(status as i32);
+            }
+
+            // リスト操作コマンド
+
+            // リストの値を取得
+            "get" => {
+                let index = self.pop_stack().get_number();
+                let result: Type = match self.pop_stack() {
+                    Type::String(s) => {
+                        let text: Vec<_> = s.chars().collect();
+                        Type::String(text[index as usize].to_string())
+                    }
+                    Type::List(l) => {
+                        let list = l;
+                        list[index as usize].clone()
+                    }
+                    _ => {
+                        self.log_print(format!("エラー! リスト型でのみ有効です"));
+                        Type::List(vec![])
+                    }
+                };
+                self.stack.push(result);
+            }
+
+            // リストの値を設定
+            "set" => {
+                let value = self.pop_stack();
+                let index = self.pop_stack().get_number();
+                let mut list: Vec<Type> = self.pop_stack().get_list();
+                list[index as usize] = value;
+                self.stack.push(Type::List(list));
+            }
+
+            // リストの値を削除
+            "del" => {
+                let index = self.pop_stack().get_number();
+                let mut list = self.pop_stack().get_list();
+                list.remove(index as usize);
+                self.stack.push(Type::List(list));
+            }
+
+            // リストに値を追加
+            "append" => {
+                let data = self.pop_stack();
+                let mut list = self.pop_stack().get_list();
+                list.push(data);
+                self.stack.push(Type::List(list));
+            }
+
+            // リストに挿入
+            "insert" => {
+                let data = self.pop_stack();
+                let index = self.pop_stack().get_number();
+                let mut list = self.pop_stack().get_list();
+                list.insert(index as usize, data);
+                self.stack.push(Type::List(list));
+            }
+
+            // 並び替え
+            "sort" => {
+                let mut list: Vec<String> = self
+                    .pop_stack()
+                    .get_list()
+                    .iter()
+                    .map(|x| x.to_owned().get_string())
+                    .collect();
+                list.sort();
+                self.stack.push(Type::List(
+                    list.iter()
+                        .map(|x| Type::String(x.to_string()))
+                        .collect::<Vec<_>>(),
+                ));
+            }
+
+            // 反転
+            "reverse" => {
+                let mut list = self.pop_stack().get_list();
+                list.reverse();
+                self.stack.push(Type::List(list));
             }
 
             // イテレート
@@ -457,276 +643,6 @@ impl Executor {
                 self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
             }
 
-            // スタックの値をポップ
-            "pop" => {
-                self.pop_stack();
-            }
-
-            // 文字列を結合
-            "concat" => {
-                let b = self.pop_stack().get_string();
-                let a = self.pop_stack().get_string();
-                self.stack.push(Type::String(a + &b));
-            }
-
-            // 文字列を分割
-            "split" => {
-                let key = self.pop_stack().get_string();
-                let text = self.pop_stack().get_string();
-                self.stack.push(Type::List(
-                    text.split(&key)
-                        .map(|x| Type::String(x.to_string()))
-                        .collect::<Vec<Type>>(),
-                ));
-            }
-
-            // リストを結合した文字列を生成
-            "join" => {
-                let key = self.pop_stack().get_string();
-                let mut list = self.pop_stack().get_list();
-                self.stack.push(Type::String(
-                    list.iter_mut()
-                        .map(|x| x.get_string())
-                        .collect::<Vec<String>>()
-                        .join(&key),
-                ))
-            }
-
-            // 文字列の置換
-            "replace" => {
-                let after = self.pop_stack().get_string();
-                let before = self.pop_stack().get_string();
-                let text = self.pop_stack().get_string();
-                self.stack.push(Type::String(text.replace(&before, &after)))
-            }
-
-            // 引き算
-            "sub" => {
-                let b = self.pop_stack().get_number();
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Number(a - b));
-            }
-
-            // 変数の定義
-            "var" => {
-                let name = self.pop_stack().get_string(); // 変数名
-                let data = self.pop_stack(); // 値
-                self.memory
-                    .entry(name)
-                    .and_modify(|value| *value = data.clone())
-                    .or_insert(data);
-
-                self.show_variables()
-            }
-
-            // 掛け算
-            "mul" => {
-                let b = self.pop_stack().get_number();
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Number(a * b));
-            }
-
-            // 割り算
-            "div" => {
-                let b = self.pop_stack().get_number();
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Number(a / b));
-            }
-
-            // 商の余り
-            "mod" => {
-                let b = self.pop_stack().get_number();
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Number(a % b));
-            }
-
-            // べき乗
-            "pow" => {
-                let b = self.pop_stack().get_number();
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Number(a.powf(b)));
-            }
-
-            // 四捨五入
-            "round" => {
-                let a = self.pop_stack().get_number();
-                self.stack.push(Type::Number(a.round()));
-            }
-
-            // 表示出力
-            "print" => {
-                let a = self.pop_stack().get_string();
-                if let Mode::Debug = self.mode {
-                    println!("出力: {a}");
-                } else {
-                    println!("{a}");
-                }
-            }
-
-            // 並び替え
-            "sort" => {
-                let mut list: Vec<String> = self
-                    .pop_stack()
-                    .get_list()
-                    .iter()
-                    .map(|x| x.to_owned().get_string())
-                    .collect();
-                list.sort();
-                self.stack.push(Type::List(
-                    list.iter()
-                        .map(|x| Type::String(x.to_string()))
-                        .collect::<Vec<_>>(),
-                ));
-            }
-
-            "reverse" => {
-                let mut list = self.pop_stack().get_list();
-                list.reverse();
-                self.stack.push(Type::List(list));
-            }
-
-            // データ型の取得
-            "type" => {
-                let result = match self.pop_stack() {
-                    Type::Number(_) => "number",
-                    Type::String(_) => "string",
-                    Type::Bool(_) => "bool",
-                    Type::List(_) => "list",
-                }
-                .to_string();
-                self.stack.push(Type::String(result));
-            }
-
-            // シーケンス値を設定
-            "set" => {
-                let mut value = self.pop_stack();
-                let index = self.pop_stack().get_number();
-                let result: Type = match self.pop_stack() {
-                    Type::String(s) => {
-                        let mut text: Vec<_> = s.chars().collect();
-                        text[index as usize] = value.get_string().chars().collect::<Vec<_>>()[0];
-                        Type::String(
-                            text.iter()
-                                .map(|x| x.to_string())
-                                .collect::<Vec<String>>()
-                                .join(""),
-                        )
-                    }
-                    Type::List(l) => {
-                        let mut list = l;
-                        list[index as usize] = value;
-                        Type::List(list)
-                    }
-                    _ => {
-                        self.log_print(format!("エラー! シーケンス型でのみ有効です"));
-                        Type::List(vec![])
-                    }
-                };
-                self.stack.push(result);
-            }
-
-            // メモリ開放
-            "free" => {
-                let name = self.pop_stack().get_string();
-                self.memory.remove(name.as_str());
-                self.show_variables();
-            }
-
-            // シーケンス値を削除
-            "del" => {
-                let index = self.pop_stack().get_number();
-                let result = match self.pop_stack() {
-                    Type::String(s) => {
-                        let mut text = s;
-                        text.remove(index as usize);
-                        Type::String(text)
-                    }
-                    Type::List(l) => {
-                        let mut list = l;
-                        list.remove(index as usize);
-                        Type::List(list)
-                    }
-                    _ => {
-                        self.log_print(format!("エラー! シーケンス型でのみ有効です"));
-                        Type::List(vec![])
-                    }
-                };
-                self.stack.push(result);
-            }
-
-            // シーケンス値を取得
-            "get" => {
-                let index = self.pop_stack().get_number();
-                let result: Type = match self.pop_stack() {
-                    Type::String(s) => {
-                        let text: Vec<_> = s.chars().collect();
-                        Type::String(text[index as usize].to_string())
-                    }
-                    Type::List(l) => {
-                        let list = l;
-                        list[index as usize].clone()
-                    }
-                    _ => {
-                        self.log_print(format!("エラー! シーケンス型でのみ有効です"));
-                        Type::List(vec![])
-                    }
-                };
-                self.stack.push(result);
-            }
-
-            //リストに追加
-            "append" => {
-                let mut data = self.pop_stack();
-                let result: Type = match self.pop_stack() {
-                    Type::List(l) => {
-                        let mut l = l;
-                        l.push(data);
-                        Type::List(l)
-                    }
-
-                    Type::String(s) => {
-                        let mut s = s;
-                        s.push_str(data.get_string().as_str());
-                        Type::String(s)
-                    }
-                    _ => {
-                        self.log_print(format!("エラー! シーケンス型でのみ有効です"));
-                        Type::List(vec![])
-                    }
-                };
-                self.stack.push(result);
-            }
-
-            // シーケンスに挿入
-            "insert" => {
-                let mut data = self.pop_stack();
-                let index = self.pop_stack().get_number();
-                let result: Type = match self.pop_stack() {
-                    Type::String(s) => {
-                        let mut text = s;
-                        text.insert_str(index as usize, data.get_string().as_str());
-                        Type::String(text)
-                    }
-                    Type::List(l) => {
-                        let mut list = l;
-                        list.insert(index as usize, data);
-                        Type::List(list)
-                    }
-                    _ => {
-                        self.log_print(format!("エラー! シーケンス型でのみ有効です"));
-                        Type::List(vec![])
-                    }
-                };
-                self.stack.push(result);
-            }
-
-            // 含まれているか
-            "find" => {
-                let word = self.pop_stack().get_string();
-                let text = self.pop_stack().get_string();
-                self.stack.push(Type::Bool(text.contains(&word)))
-            }
-
             // 範囲を生成
             "range" => {
                 let step = self.pop_stack().get_number();
@@ -742,7 +658,7 @@ impl Executor {
                 self.stack.push(Type::List(range));
             }
 
-            // シーケンスの長さ
+            // リストの長さ
             "len" => {
                 let data = self.pop_stack();
                 self.stack.push(Type::Number(match data {
@@ -750,6 +666,44 @@ impl Executor {
                     Type::String(s) => s.chars().count() as f64,
                     _ => 1f64,
                 }));
+            }
+
+            // メモリ管理コマンド
+
+            // スタックの値をポップ
+            "pop" => {
+                self.pop_stack();
+            }
+
+            // 変数の定義
+            "var" => {
+                let name = self.pop_stack().get_string(); // 変数名
+                let data = self.pop_stack(); // 値
+                self.memory
+                    .entry(name)
+                    .and_modify(|value| *value = data.clone())
+                    .or_insert(data);
+
+                self.show_variables()
+            }
+
+            // データ型の取得
+            "type" => {
+                let result = match self.pop_stack() {
+                    Type::Number(_) => "number",
+                    Type::String(_) => "string",
+                    Type::Bool(_) => "bool",
+                    Type::List(_) => "list",
+                }
+                .to_string();
+                self.stack.push(Type::String(result));
+            }
+
+            // メモリ開放
+            "free" => {
+                let name = self.pop_stack().get_string();
+                self.memory.remove(name.as_str());
+                self.show_variables();
             }
 
             // 値のコピー
