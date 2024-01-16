@@ -680,7 +680,6 @@ impl Executor {
                     .entry(name)
                     .and_modify(|value| *value = data.clone())
                     .or_insert(data);
-
                 self.show_variables()
             }
 
