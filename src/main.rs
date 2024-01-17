@@ -530,21 +530,8 @@ impl Executor {
             // リストの値を取得
             "get" => {
                 let index = self.pop_stack().get_number();
-                let result: Type = match self.pop_stack() {
-                    Type::String(s) => {
-                        let text: Vec<_> = s.chars().collect();
-                        Type::String(text[index as usize].to_string())
-                    }
-                    Type::List(l) => {
-                        let list = l;
-                        list[index as usize].clone()
-                    }
-                    _ => {
-                        self.log_print(format!("エラー! リスト型でのみ有効です"));
-                        Type::List(vec![])
-                    }
-                };
-                self.stack.push(result);
+                let list: Vec<Type> = self.pop_stack().get_list();
+                self.stack.push(list[index as usize].clone());
             }
 
             // リストの値を設定
