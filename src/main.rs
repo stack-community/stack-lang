@@ -529,26 +529,41 @@ impl Executor {
 
             // リストの値を取得
             "get" => {
-                let index = self.pop_stack().get_number();
+                let index = self.pop_stack().get_number() as usize;
                 let list: Vec<Type> = self.pop_stack().get_list();
-                self.stack.push(list[index as usize].clone());
+                if list.len() > index {
+                    self.stack.push(list[index].clone());
+                } else {
+                    self.log_print("エラー! インデックス指定が範囲外です".to_string());
+                    self.stack.push(Type::List(list));
+                }
             }
 
             // リストの値を設定
             "set" => {
                 let value = self.pop_stack();
-                let index = self.pop_stack().get_number();
+                let index = self.pop_stack().get_number() as usize;
                 let mut list: Vec<Type> = self.pop_stack().get_list();
-                list[index as usize] = value;
-                self.stack.push(Type::List(list));
+                if list.len() > index {
+                    list[index] = value;
+                    self.stack.push(Type::List(list));
+                } else {
+                    self.log_print("エラー! インデックス指定が範囲外です".to_string());
+                    self.stack.push(Type::List(list));
+                }
             }
 
             // リストの値を削除
             "del" => {
-                let index = self.pop_stack().get_number();
+                let index = self.pop_stack().get_number() as usize;
                 let mut list = self.pop_stack().get_list();
-                list.remove(index as usize);
-                self.stack.push(Type::List(list));
+                if list.len() > index {
+                    list.remove(index as usize);
+                    self.stack.push(Type::List(list));
+                } else {
+                    self.log_print("エラー! インデックス指定が範囲外です".to_string());
+                    self.stack.push(Type::List(list));
+                }
             }
 
             // リストに値を追加
