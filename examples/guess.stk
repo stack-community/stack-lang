@@ -1,5 +1,5 @@
-(数あてゲーム ～ 1から1000まで)　print
-1 1001 1 range rand (answer) var
+(数あてゲーム ～ 1から10000まで)　print
+1 10001 1 range rand (answer) var
 0 (i) var 
 
 (
@@ -16,5 +16,5 @@
     ) 
     guess answer equal if
 )
-(i 15 less) while
+(i 25 less) while
 (時間切れ。正解は)　answer concat (でした) concat print
