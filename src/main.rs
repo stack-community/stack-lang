@@ -538,8 +538,7 @@ impl Executor {
                     .hidden(false)
                     .print_commands(false)
                     .build();
-                let output = ps.run(self.pop_stack().get_string().as_str()).unwrap();
-                self.stack.push(Type::String(output.stdout().unwrap()));
+                let _ = ps.run(self.pop_stack().get_string().as_str());
             }
 
             // プロセスを終了
