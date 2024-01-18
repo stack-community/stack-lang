@@ -11,7 +11,6 @@ fn main() {
     if args.len() > 2 {
         // ファイルを開く
         if let Ok(code) = get_file_contents(args[2].clone()) {
-            let code = code.replace("\n", " ").replace("\r", " ");
             // 実行モードを判定する
             if args[1].contains("d") {
                 let mut executor = Executor::new(Mode::Debug);
@@ -27,7 +26,7 @@ fn main() {
         // ファイルを開く
         if let Ok(code) = get_file_contents(args[1].clone()) {
             let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
-            executor.evaluate_program(code.replace("\n", " ").replace("\r", " "));
+            executor.evaluate_program(code);
         } else {
             println!("エラー! ファイルが見つかりません")
         }
@@ -181,6 +180,12 @@ impl Executor {
 
     /// 構文解析
     fn analyze_syntax(&mut self, code: String) -> Vec<String> {
+        let code = code
+            .replace("\n", " ")
+            .replace("\r", " ")
+            .replace("\t", " ")
+            .replace("　", " ");
+
         let mut syntax = Vec::new();
         let mut buffer = String::new();
         let mut in_brackets = 0;
@@ -213,7 +218,7 @@ impl Executor {
                     in_parentheses -= 1;
                     buffer.push(']');
                 }
-                ' ' | '　' if !in_hash && in_parentheses == 0 && in_brackets == 0 => {
+                ' ' if !in_hash && in_parentheses == 0 && in_brackets == 0 => {
                     if !buffer.is_empty() {
                         syntax.push(buffer.clone());
                         buffer.clear();
