@@ -1,3 +1,4 @@
+use powershell_script::PsScriptBuilder;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
@@ -528,6 +529,17 @@ impl Executor {
                     }
                     self.evaluate_program(code.clone());
                 }
+            }
+
+            "shell" => {
+                let ps = PsScriptBuilder::new()
+                    .no_profile(true)
+                    .non_interactive(true)
+                    .hidden(false)
+                    .print_commands(false)
+                    .build();
+                let output = ps.run(self.pop_stack().get_string().as_str()).unwrap();
+                self.stack.push(Type::String(output.stdout().unwrap()));
             }
 
             // プロセスを終了
