@@ -705,6 +705,15 @@ impl Executor {
                 self.stack.push(Type::String(result));
             }
 
+            // メモリ情報を取得
+            "mem" => {
+                let mut list: Vec<Type> = Vec::new();
+                for (name, _) in self.memory.clone() {
+                    list.push(Type::String(name))
+                }
+                self.stack.push(Type::List(list))
+            }
+
             // メモリ開放
             "free" => {
                 let name = self.pop_stack().get_string();
