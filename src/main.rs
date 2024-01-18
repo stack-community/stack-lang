@@ -531,6 +531,7 @@ impl Executor {
                 }
             }
 
+            // シェルコマンドを実行
             "shell" => {
                 let ps = PsScriptBuilder::new()
                     .no_profile(true)
