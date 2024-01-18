@@ -34,4 +34,4 @@ This is example code output FizzBuzz in the Stack Programing Language.
 Any contributions are welcome! Feel free to open issues for bug reports or feature requests, and submit pull requests to enhance the Stack Programing Language.
 
 ## License
-Stack programing language is freedom and open source software under the MIT License. everyone can use, modify, and share it. See the LICENSE file for details.
+Stack programing language is freedom and open source software under the MIT License. everyone can use, modify, and share it. See the [LICENSE](LICENSE) file for details.
