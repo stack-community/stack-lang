@@ -729,6 +729,12 @@ impl Executor {
                 self.pop_stack();
             }
 
+            // スタックのサイズを取得
+            "size-stack" => {
+                let len: f64 = self.stack.len() as f64;
+                self.stack.push(Type::Number(len));
+            }
+
             // 変数の定義
             "var" => {
                 let name = self.pop_stack().get_string(); // 変数名
