@@ -20,12 +20,16 @@ fn main() {
                 let mut executor = Executor::new(Mode::Script);
                 executor.evaluate_program(code); // スクリプト実行
             }
+        } else {
+            println!("エラー! ファイルが見つかりません")
         }
     } else if args.len() > 1 {
         // ファイルを開く
         if let Ok(code) = get_file_contents(args[1].clone()) {
             let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
             executor.evaluate_program(code.replace("\n", " ").replace("\r", " "));
+        } else {
+            println!("エラー! ファイルが見つかりません")
         }
     } else {
         // タイトルを表示する
