@@ -1,3 +1,4 @@
+use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
@@ -395,6 +396,16 @@ impl Executor {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Bool(a < b));
+            }
+
+            // ランダム値を取得
+            "rand" => {
+                let list = self.pop_stack().get_list();
+                let result = match list.choose(&mut rand::thread_rng()) {
+                    Some(i) => i.to_owned(),
+                    None => Type::List(list),
+                };
+                self.stack.push(result);
             }
 
             // 文字列操作コマンド
