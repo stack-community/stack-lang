@@ -31,9 +31,11 @@
         (終了します) print 
         0 exit
     ) (
-        number prime eval    
-        ( number (は素数です) concat print )    
-        ( number (は素数ではありません) concat print )
+        now-time (start) var
+        number prime eval
+        now-time start sub (time) var    
+        ( number (は素数です。実行時間：) concat time concat (秒)　concat print )    
+        ( number (は素数ではありません。実行時間：)  concat time concat (秒) concat print )
         flag if
     )
     number (exit) find if
