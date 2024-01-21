@@ -550,12 +550,19 @@ impl Executor {
                     .hidden(false)
                     .print_commands(false)
                     .build();
-                let result = ps
-                    .run(self.pop_stack().get_string().as_str())
-                    .unwrap()
-                    .stdout()
-                    .unwrap();
-                self.stack.push(Type::String(result));
+                let result = ps.run(self.pop_stack().get_string().as_str());
+                match result {
+                    Ok(i) => self.stack.push(Type::String(
+                        i.stdout()
+                            .unwrap_or("".to_string())
+                            .as_str()
+                            .trim()
+                            .to_string(),
+                    )),
+                    Err(_) => {
+                        self.log_print("エラー! シェルスクリプトの実行に失敗しました".to_string())
+                    }
+                }
             }
 
             // プロセスを終了
