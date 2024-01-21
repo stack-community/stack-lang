@@ -182,8 +182,8 @@ impl Executor {
     fn analyze_syntax(&mut self, code: String) -> Vec<String> {
         let code = code
             .replace("\n", " ")
-            .replace("\r", " ")
             .replace("\t", " ")
+            .replace("\r", " ")
             .replace("　", " ");
 
         let mut syntax = Vec::new();
