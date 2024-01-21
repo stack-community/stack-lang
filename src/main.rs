@@ -2,10 +2,10 @@ use powershell_script::PsScriptBuilder;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
-use std::thread::sleep;
 use std::fs::File;
 use std::io::{self, Error, Read, Write};
-use std::time::{SystemTime, Duration, UNIX_EPOCH};
+use std::thread::sleep;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 fn main() {
     // コマンドライン引数を読み込む
@@ -808,9 +808,7 @@ impl Executor {
                 ));
             }
 
-            "sleep" => {
-                sleep(Duration::from_secs_f64(self.pop_stack().get_number()))
-            }
+            "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
             // コマンドとして認識されない場合は文字列とする
             _ => self.stack.push(Type::String(command)),
