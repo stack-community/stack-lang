@@ -548,7 +548,12 @@ impl Executor {
                     .hidden(false)
                     .print_commands(false)
                     .build();
-                let _ = ps.run(self.pop_stack().get_string().as_str());
+                let result = ps
+                    .run(self.pop_stack().get_string().as_str())
+                    .unwrap()
+                    .stdout()
+                    .unwrap();
+                self.stack.push(Type::String(result));
             }
 
             // プロセスを終了
