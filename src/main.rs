@@ -2,8 +2,10 @@ use powershell_script::PsScriptBuilder;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
+use std::thread::sleep;
 use std::fs::File;
 use std::io::{self, Error, Read, Write};
+use std::time::{SystemTime, Duration, UNIX_EPOCH};
 
 fn main() {
     // コマンドライン引数を読み込む
@@ -792,6 +794,22 @@ impl Executor {
                 let a = self.pop_stack();
                 self.stack.push(b);
                 self.stack.push(a);
+            }
+
+            // 日付処理
+
+            // 現在時刻を取得
+            "now-time" => {
+                self.stack.push(Type::Number(
+                    SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs_f64(),
+                ));
+            }
+
+            "sleep" => {
+                sleep(Duration::from_secs_f64(self.pop_stack().get_number()))
             }
 
             // コマンドとして認識されない場合は文字列とする
