@@ -796,7 +796,7 @@ impl Executor {
                 self.stack.push(a);
             }
 
-            // 日付処理
+            // 時間処理
 
             // 現在時刻を取得
             "now-time" => {
@@ -808,6 +808,7 @@ impl Executor {
                 ));
             }
 
+            // 一定時間スリープ
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
             // コマンドとして認識されない場合は文字列とする
