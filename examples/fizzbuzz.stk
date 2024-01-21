@@ -1,18 +1,24 @@
-( (i) var
-    ((FizzBuzz) print )
-    ( 
-        ((Fizz) print )
-        (
-            ((Buzz) print )
-            (i print )
-            i 5 mod 0 equal if 
-        )
-        i 3 mod 0 equal if 
-    ) 
-    i 15 mod 0 equal if
-)
-(fizzbuzz) var
+(
+    (i) var 
+    (Fizz) () 
+    i 3 mod 0 equal if
+) (fizz) var
+
+(
+    (i) var 
+    (Buzz) () 
+    i 5 mod 0 equal if
+) (buzz) var
 
 1 101 1 range (i) (
-    i fizzbuzz eval
+
+    () (msg) var
+    msg i fizz eval concat (msg) var
+    msg i buzz eval concat (msg) var
+
+    (
+        i (msg) var
+    ) ()
+    msg () equal if
+    msg print
 ) for
