@@ -772,6 +772,19 @@ impl Executor {
                 self.stack.push(Type::String(result));
             }
 
+            // 明示的なデータ型変換
+            "cast" => {
+                let types = self.pop_stack().get_string();
+                let mut value = self.pop_stack();
+                match types.as_str() {
+                    "number" => self.stack.push(Type::Number(value.get_number())),
+                    "string" => self.stack.push(Type::String(value.get_string())),
+                    "bool" => self.stack.push(Type::Bool(value.get_bool())),
+                    "list" => self.stack.push(Type::List(value.get_list())),
+                    _ => self.stack.push(value),
+                }
+            }
+
             // メモリ情報を取得
             "mem" => {
                 let mut list: Vec<Type> = Vec::new();
