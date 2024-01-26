@@ -429,6 +429,29 @@ impl Executor {
                 self.stack.push(Type::String(text.repeat(count as usize)));
             }
 
+            // 数値からユニコード文字列を取得
+            "decode" => {
+                let code = self.pop_stack().get_number();
+                let result = char::from_u32(code as u32);
+                match result {
+                    Some(c) => self.stack.push(Type::String(c.to_string())),
+                    None => {
+                        self.log_print("エラー! 数値デコードに失敗しました".to_string());
+                        self.stack.push(Type::Number(code));
+                    }
+                }
+            }
+
+            "encode" => {
+                let string = self.pop_stack().get_string();
+                if let Some(first_char) = string.chars().next() {
+                    self.stack.push(Type::Number((first_char as u32) as f64));
+                } else {
+                    self.log_print("エラー! 文字列のエンコードに失敗しました".to_string());
+                    self.stack.push(Type::String(string))
+                }
+            }
+
             // 文字列を結合
             "concat" => {
                 let b = self.pop_stack().get_string();
