@@ -35,7 +35,6 @@ fn main() {
     } else {
         // タイトルを表示する
         println!("Stack プログラミング言語");
-        println!("(c) 2023 梶塚太智. All rights reserved");
         let mut executor = Executor::new(Mode::Debug);
         // REPL実行
         loop {
