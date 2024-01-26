@@ -20,8 +20,9 @@
             (i number 0.5 pow 1 add less flag and) while
         ) number 2 mod 0 equal number 3 mod 0 equal or if
     ) number 4 less if
+    flag
 )
-(prime) var
+(prime?) var
 
 (素数判定プログラム) print
 (
@@ -32,11 +33,11 @@
         0 exit
     ) (
         now-time (start) var
-        number prime eval
-        now-time start sub (time) var    
         ( number (は素数です（処理時間) concat time concat (秒）)　concat print )    
         ( number (は素数ではありません（処理時間)  concat time concat (秒）) concat print )
-        flag if
+        number prime? eval
+        now-time start sub (time) var
+        if    
     )
     number (exit) find if
 ) (true) while
