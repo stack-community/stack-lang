@@ -1,0 +1,13 @@
+(
+    (key) var (str) var
+    str (c) (
+        c encode key add
+    ) map
+) (encryption) var
+
+(
+    (key) var (codes) var
+    codes (i) (
+        i key sub decode
+    ) map () join
+) (decryption) var
