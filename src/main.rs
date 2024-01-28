@@ -162,7 +162,7 @@ impl Executor {
     /// ログ表示
     fn log_print(&mut self, msg: String) {
         if let Mode::Debug = self.mode {
-            println!("{msg}");
+            print!("{msg}");
         }
     }
 
@@ -177,6 +177,17 @@ impl Executor {
                 .collect::<Vec<String>>()
                 .join(", ")
         ));
+    }
+
+    fn show_stack(&mut self) {
+        self.log_print(format!(
+            "Stack〔 {} 〕",
+            self.stack
+                .iter()
+                .map(|x| x.display())
+                .collect::<Vec<_>>()
+                .join(" | ")
+        ))
     }
 
     /// 構文解析
@@ -244,15 +255,8 @@ impl Executor {
 
         for token in syntax {
             // スタック内部を表示する
-            self.log_print(format!(
-                "Stack〔 {} 〕 ←  {}",
-                self.stack
-                    .iter()
-                    .map(|x| x.display())
-                    .collect::<Vec<_>>()
-                    .join(" | "),
-                token
-            ));
+            self.show_stack();
+            self.log_print(format!(" ←  {}\n", token));
 
             // 数値に変換できたらスタックに積む
             if let Ok(i) = token.parse::<f64>() {
@@ -303,7 +307,7 @@ impl Executor {
 
             // コメントを処理
             if token.contains("#") {
-                self.log_print(format!("※ コメント「{}」", token.replace("#", "")));
+                self.log_print(format!("※ コメント「{}」\n", token.replace("#", "")));
                 continue;
             }
 
@@ -312,14 +316,8 @@ impl Executor {
         }
 
         // 実行後のスタックを表示
-        self.log_print(format!(
-            "Stack〔 {} 〕",
-            self.stack
-                .iter()
-                .map(|x| x.display())
-                .collect::<Vec<_>>()
-                .join(" | "),
-        ));
+        self.show_stack();
+        self.log_print("\n".to_string());
     }
 
     /// コマンドを実行する
@@ -435,7 +433,7 @@ impl Executor {
                 match result {
                     Some(c) => self.stack.push(Type::String(c.to_string())),
                     None => {
-                        self.log_print("エラー! 数値デコードに失敗しました".to_string());
+                        self.log_print("エラー! 数値デコードに失敗しました\n".to_string());
                         self.stack.push(Type::Number(code));
                     }
                 }
@@ -446,7 +444,7 @@ impl Executor {
                 if let Some(first_char) = string.chars().next() {
                     self.stack.push(Type::Number((first_char as u32) as f64));
                 } else {
-                    self.log_print("エラー! 文字列のエンコードに失敗しました".to_string());
+                    self.log_print("エラー! 文字列のエンコードに失敗しました\n".to_string());
                     self.stack.push(Type::String(string))
                 }
             }
@@ -582,7 +580,7 @@ impl Executor {
                             .to_string(),
                     )),
                     Err(_) => {
-                        self.log_print("エラー! シェルスクリプトの実行に失敗しました".to_string())
+                        self.log_print("エラー! シェルスクリプトの実行に失敗しました\n".to_string())
                     }
                 }
             }
@@ -602,7 +600,7 @@ impl Executor {
                 if list.len() > index {
                     self.stack.push(list[index].clone());
                 } else {
-                    self.log_print("エラー! インデックス指定が範囲外です".to_string());
+                    self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
                     self.stack.push(Type::List(list));
                 }
             }
@@ -616,7 +614,7 @@ impl Executor {
                     list[index] = value;
                     self.stack.push(Type::List(list));
                 } else {
-                    self.log_print("エラー! インデックス指定が範囲外です".to_string());
+                    self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
                     self.stack.push(Type::List(list));
                 }
             }
@@ -629,7 +627,7 @@ impl Executor {
                     list.remove(index as usize);
                     self.stack.push(Type::List(list));
                 } else {
-                    self.log_print("エラー! インデックス指定が範囲外です".to_string());
+                    self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
                     self.stack.push(Type::List(list));
                 }
             }
@@ -863,7 +861,9 @@ impl Executor {
         if let Some(value) = self.stack.pop() {
             value
         } else {
-            self.log_print("エラー! スタックの値が足りません。デフォルト値を返します".to_string());
+            self.log_print(
+                "エラー! スタックの値が足りません。デフォルト値を返します\n".to_string(),
+            );
             Type::String("".to_string())
         }
     }
