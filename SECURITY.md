@@ -10,7 +10,7 @@ If you discover a potential security vulnerability in the Stack Programming Lang
 
 3. Include a detailed description of the vulnerability, steps to reproduce it, and any related information.
 
-4. Our security team will acknowledge your email within [timeframe] and work with you to address the issue.
+4. Our security team will acknowledge your email and work with you to address the issue.
 
 ## Security Response
 
