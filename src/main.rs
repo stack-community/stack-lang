@@ -507,8 +507,10 @@ impl Executor {
             // ファイル読み込み
             "read-file" => {
                 let name = self.pop_stack().get_string();
-                self.stack
-                    .push(Type::String(get_file_contents(name).unwrap()));
+                match get_file_contents(name) {
+                    Ok(s) => self.stack.push(Type::String(s)),
+                    Err(e) => self.log_print(format!("エラー! {}\n", e)),
+                };
             }
 
             // 標準入力
