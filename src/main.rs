@@ -169,7 +169,7 @@ impl Executor {
     /// メモリを表示
     fn show_variables(&mut self) {
         self.log_print(format!(
-            "メモリ内部の変数 {{ {} }}",
+            "メモリ内部の変数 {{ {} }}\n",
             self.memory
                 .clone()
                 .iter()
