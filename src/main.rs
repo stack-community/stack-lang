@@ -2,6 +2,7 @@ use powershell_script::PsScriptBuilder;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
+use std::thread;
 use std::fs::File;
 use std::io::{self, Error, Read, Write};
 use std::thread::sleep;
@@ -143,6 +144,7 @@ impl Type {
 }
 
 /// プログラム実行を管理
+#[derive(Clone, Debug)]
 struct Executor {
     stack: Vec<Type>,              // スタック
     memory: HashMap<String, Type>, // 変数のメモリ領域
@@ -562,6 +564,14 @@ impl Executor {
                     }
                     self.evaluate_program(code.clone());
                 }
+            }
+
+            "thread" => {
+                let code = self.pop_stack().get_string();
+                let mut executor = self.clone();
+                thread::spawn(move || {
+                    executor.evaluate_program(code)
+                });
             }
 
             // シェルコマンドを実行

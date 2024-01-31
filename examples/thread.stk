@@ -1,0 +1,10 @@
+( (name) var
+    1 4 1 range (i) (
+        name i concat print
+        0.7 sleep
+    ) for
+) (hey) var
+
+((太郎) hey eval) thread 
+((次郎) hey eval) thread
+(三郎) hey eval
