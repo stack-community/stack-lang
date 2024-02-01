@@ -2,9 +2,9 @@ use powershell_script::PsScriptBuilder;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
-use std::thread;
 use std::fs::File;
 use std::io::{self, Error, Read, Write};
+use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -569,9 +569,7 @@ impl Executor {
             "thread" => {
                 let code = self.pop_stack().get_string();
                 let mut executor = self.clone();
-                thread::spawn(move || {
-                    executor.evaluate_program(code)
-                });
+                thread::spawn(move || executor.evaluate_program(code));
             }
 
             // シェルコマンドを実行
@@ -582,7 +580,9 @@ impl Executor {
                     .hidden(false)
                     .print_commands(false)
                     .build();
-                let _ = ps.run("[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')");
+                let _ = ps.run(
+                    "[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')",
+                );
                 let result = ps.run(self.pop_stack().get_string().as_str());
                 match result {
                     Ok(i) => self.stack.push(Type::String(
