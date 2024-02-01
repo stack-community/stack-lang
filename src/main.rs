@@ -582,6 +582,7 @@ impl Executor {
                     .hidden(false)
                     .print_commands(false)
                     .build();
+                let _ = ps.run("[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')");
                 let result = ps.run(self.pop_stack().get_string().as_str());
                 match result {
                     Ok(i) => self.stack.push(Type::String(
