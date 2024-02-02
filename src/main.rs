@@ -39,7 +39,16 @@ fn main() {
         let mut executor = Executor::new(Mode::Debug);
         // REPL実行
         loop {
-            executor.evaluate_program(input("> "))
+            let mut code = String::new();
+            loop {
+                let inputed = input("> ");
+                code += &format!("{inputed}\n");
+                if inputed.is_empty() {
+                    break;
+                }
+            }
+
+            executor.evaluate_program(code)
         }
     }
 }
