@@ -4,10 +4,8 @@ input (name) var name read-file (code) var
 
 (
     (ファイルシステムが破壊される可能性がある危険なコードを発見しました) print
-    (危険なコードを削除しています) print
     code (write-file) (#削除されました#) replace
     name write-file
-    (完了しました) print
-    () input
+    (危険なコードを削除します) print
 ) (このスクリプトは安全です print)
 code (write-file) find if
