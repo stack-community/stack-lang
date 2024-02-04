@@ -1,0 +1,4 @@
+(https://api.tts.quest/v3/voicevox/synthesis?text=)
+(文章を入力してください> ) input concat request
+(,) split 5 get (":") split 1 get (\) () replace 
+(") () replace print

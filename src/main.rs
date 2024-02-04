@@ -880,6 +880,16 @@ impl Executor {
             // 一定時間スリープ
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
+            // Web系処理
+
+            //HTTPリクエストを送る
+            "request" => {
+                let url = self.pop_stack().get_string();
+                self.stack.push(Type::String(
+                    reqwest::blocking::get(url).unwrap().text().unwrap(),
+                ));
+            }
+
             // コマンドとして認識されない場合は文字列とする
             _ => self.stack.push(Type::String(command)),
         }
