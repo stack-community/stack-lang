@@ -1,0 +1,58 @@
+#--------------------+
+| Stackプログラミング言語 |
+| 数学標準ライブラリ      |
++--------------------#
+
+( #絶対値を求める#
+    (num) var
+    num (-) () replace
+    (number) cast
+    (num) free 
+) (abs) var
+
+( #リストの合計を求める#
+    (array) var
+    array (i) (
+        i total add (total) var
+    ) for
+    total
+    (array) free
+    (i) free
+    (total) free
+) (sum) var
+
+( #リストの平均を求める#
+    (array) var
+    array sum eval 
+    array len div
+    (array) free
+) (average) var
+
+(　#素数か判定する#
+    (number) var
+    2 (i) var
+    true (flag) var
+    
+    (   (false (flag) var)
+        (true (flag) var)
+        number 2 less if
+    ) (
+        (false (flag) var) 
+        (
+            (
+                ( 
+                    false (flag) var
+                ) ()
+                number i mod 0 equal if
+
+                i 1 add (i) var
+            )
+            (i number 0.5 pow 1 add less flag and) while
+        ) number 2 mod 0 equal number 3 mod 0 equal or if
+    ) number 4 less if
+    flag
+    (flag) free
+    (number) free
+    (i) free
+)
+(prime?) var

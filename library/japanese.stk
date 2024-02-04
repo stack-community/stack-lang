@@ -1,0 +1,14 @@
+#--------------------+
+| Stackプログラミング言語 |
+| 日本語変換ライブラリ　   |
++--------------------#
+
+( 
+    (code) var code
+    (足す) (add) replace
+    (引く) (sub) replace
+    (もし) (if) replace
+    (くっつける) (concat) replace
+    (評価する) (eval) replace
+    (繰り返す) (repeat) replace
+) (japanese) var
