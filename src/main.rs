@@ -428,6 +428,13 @@ impl Executor {
                 self.stack.push(result);
             }
 
+            // シーケンス値をシャッフル
+            "shuffle" => {
+                let mut list = self.pop_stack().get_list();
+                list.shuffle(&mut rand::thread_rng());
+                self.stack.push(Type::List(list));
+            }
+
             // 文字列操作コマンド
 
             // 文字列を回数分リピート
