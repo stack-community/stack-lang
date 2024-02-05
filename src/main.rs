@@ -588,32 +588,6 @@ impl Executor {
                 thread::spawn(move || executor.evaluate_program(code));
             }
 
-            // シェルコマンドを実行
-            "shell" => {
-                let ps = PsScriptBuilder::new()
-                    .no_profile(true)
-                    .non_interactive(true)
-                    .hidden(false)
-                    .print_commands(false)
-                    .build();
-                let _ = ps.run(
-                    "[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')",
-                );
-                let result = ps.run(self.pop_stack().get_string().as_str());
-                match result {
-                    Ok(i) => self.stack.push(Type::String(
-                        i.stdout()
-                            .unwrap_or("".to_string())
-                            .as_str()
-                            .trim()
-                            .to_string(),
-                    )),
-                    Err(_) => {
-                        self.log_print("エラー! シェルスクリプトの実行に失敗しました\n".to_string())
-                    }
-                }
-            }
-
             // プロセスを終了
             "exit" => {
                 let status = self.pop_stack().get_number();
@@ -880,7 +854,7 @@ impl Executor {
             // 一定時間スリープ
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
-            // Web系処理
+            // 外部連携処理
 
             //HTTPリクエストを送る
             "request" => {
@@ -888,6 +862,39 @@ impl Executor {
                 self.stack.push(Type::String(
                     reqwest::blocking::get(url).unwrap().text().unwrap(),
                 ));
+            }
+
+            // ファイルを開く
+            "open" => {
+                let _result = std::process::Command::new("cmd")
+                    .args(&["/C", "start", "", self.pop_stack().get_string().as_str()])
+                    .spawn();
+            }
+
+            // シェルコマンドを実行
+            "shell" => {
+                let ps = PsScriptBuilder::new()
+                    .no_profile(true)
+                    .non_interactive(true)
+                    .hidden(false)
+                    .print_commands(false)
+                    .build();
+                let _ = ps.run(
+                    "[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')",
+                );
+                let result = ps.run(self.pop_stack().get_string().as_str());
+                match result {
+                    Ok(i) => self.stack.push(Type::String(
+                        i.stdout()
+                            .unwrap_or("".to_string())
+                            .as_str()
+                            .trim()
+                            .to_string(),
+                    )),
+                    Err(_) => {
+                        self.log_print("エラー! シェルスクリプトの実行に失敗しました\n".to_string())
+                    }
+                }
             }
 
             // コマンドとして認識されない場合は文字列とする
