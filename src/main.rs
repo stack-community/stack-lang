@@ -2,6 +2,7 @@ use powershell_script::PsScriptBuilder;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
+use opener;
 use std::fs::File;
 use std::io::{self, Error, Read, Write};
 use std::thread;
@@ -866,20 +867,7 @@ impl Executor {
 
             // ファイルを開く
             "open" => {
-                if cfg!(target_os = "windows") {
-                    let _result = std::process::Command::new("cmd")
-                        .args(&["/C", "start", "", self.pop_stack().get_string().as_str()])
-                        .spawn();
-                } else if cfg!(target_os = "linux") {
-                    let _result =
-                        std::process::Command::new("xdg-open") // Linuxの場合
-                            .arg(self.pop_stack().get_string().as_str())
-                            .spawn();
-                } else if cfg!(target_os = "macos") {
-                    let _result = std::process::Command::new("open")
-                        .arg(self.pop_stack().get_string().as_str())
-                        .spawn();
-                }
+                let _result = opener::open(self.pop_stack().get_string());
             }
 
             // シェルコマンドを実行
