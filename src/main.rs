@@ -1,9 +1,8 @@
-use powershell_script::PsScriptBuilder;
+use opener;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
-use opener;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
 use std::thread;
 use std::thread::sleep;
@@ -870,30 +869,32 @@ impl Executor {
                 let _result = opener::open(self.pop_stack().get_string());
             }
 
-            // シェルコマンドを実行
-            "shell" => {
-                let ps = PsScriptBuilder::new()
-                    .no_profile(true)
-                    .non_interactive(true)
-                    .hidden(false)
-                    .print_commands(false)
-                    .build();
-                let _ = ps.run(
-                    "[Console]::OutputEncoding = [System.Text.Encoding]::GetEncoding('utf-8')",
-                );
-                let result = ps.run(self.pop_stack().get_string().as_str());
-                match result {
-                    Ok(i) => self.stack.push(Type::String(
-                        i.stdout()
-                            .unwrap_or("".to_string())
-                            .as_str()
-                            .trim()
-                            .to_string(),
-                    )),
-                    Err(_) => {
-                        self.log_print("エラー! シェルスクリプトの実行に失敗しました\n".to_string())
+            //カレントディレクトリを変更
+            "cd" => {
+                if let Err(err) = std::env::set_current_dir(self.pop_stack().get_string()) {
+                    self.log_print(format!("エラー! {}", err));
+                }
+            }
+
+            // カレントディレクトリを表示
+            "pwd" => {
+                if let Ok(current_dir) = std::env::current_dir() {
+                    if let Some(path) = current_dir.to_str() {
+                        self.stack.push(Type::String(String::from(path)));
                     }
                 }
+            }
+
+            // ファイル一覧のリスト
+            "ls" => {
+                if let Ok(entries) = fs::read_dir(".") {
+        let value: Vec<Type> = entries
+            .filter_map(|entry| {
+                entry.ok().and_then(|e| e.file_name().into_string().ok()).map(|x| Type::String(x))
+            })
+            .collect();
+        self.stack.push(Type::List(value));
+    }
             }
 
             // コマンドとして認識されない場合は文字列とする

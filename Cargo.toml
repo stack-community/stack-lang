@@ -7,6 +7,5 @@ edition = "2021"
 
 [dependencies]
 opener = "0.6.1"
-powershell_script = "1.1.0"
 rand = "0.8"
 reqwest = { version = "0.11.0", features = ["blocking"] }
