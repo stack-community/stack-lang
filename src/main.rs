@@ -872,7 +872,7 @@ impl Executor {
             //カレントディレクトリを変更
             "cd" => {
                 if let Err(err) = std::env::set_current_dir(self.pop_stack().get_string()) {
-                    self.log_print(format!("エラー! {}", err));
+                    self.log_print(format!("エラー! {}\n", err));
                 }
             }
 
@@ -888,13 +888,16 @@ impl Executor {
             // ファイル一覧のリスト
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
-        let value: Vec<Type> = entries
-            .filter_map(|entry| {
-                entry.ok().and_then(|e| e.file_name().into_string().ok()).map(|x| Type::String(x))
-            })
-            .collect();
-        self.stack.push(Type::List(value));
-    }
+                    let value: Vec<Type> = entries
+                        .filter_map(|entry| {
+                            entry
+                                .ok()
+                                .and_then(|e| e.file_name().into_string().ok())
+                                .map(|x| Type::String(x))
+                        })
+                        .collect();
+                    self.stack.push(Type::List(value));
+                }
             }
 
             // コマンドとして認識されない場合は文字列とする
