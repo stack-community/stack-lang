@@ -901,6 +901,7 @@ impl Executor {
                 }
             }
 
+            // フォルダかどうか判定
             "folder" => {
                 let path = self.pop_stack().get_string();
                 let path = Path::new(path.as_str());
