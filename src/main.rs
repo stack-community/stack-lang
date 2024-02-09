@@ -2,6 +2,7 @@ use opener;
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
 use std::env;
+use std::path::Path;
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
 use std::thread;
@@ -898,6 +899,12 @@ impl Executor {
                         .collect();
                     self.stack.push(Type::List(value));
                 }
+            }
+
+            "folder" => {
+                let path = self.pop_stack().get_string();
+                let path = Path::new(path.as_str());
+                self.stack.push(Type::Bool(path.is_dir()));
             }
 
             // コマンドとして認識されない場合は文字列とする
