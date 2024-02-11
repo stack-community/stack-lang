@@ -458,6 +458,7 @@ impl Executor {
                 }
             }
 
+            // 文字列をUTF-8でエンコード
             "encode" => {
                 let string = self.pop_stack().get_string();
                 if let Some(first_char) = string.chars().next() {
