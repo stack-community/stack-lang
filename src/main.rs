@@ -573,13 +573,10 @@ impl Executor {
             "while" => {
                 let cond = self.pop_stack().get_string();
                 let code = self.pop_stack().get_string();
-                loop {
-                    if {
-                        self.evaluate_program(cond.clone());
-                        !self.pop_stack().get_bool()
-                    } {
-                        break;
-                    }
+                while {
+                    self.evaluate_program(cond.clone());
+                    self.pop_stack().get_bool()
+                } {
                     self.evaluate_program(code.clone());
                 }
             }
