@@ -888,7 +888,7 @@ impl Executor {
             "mkdir" => {
                 let name = self.pop_stack().get_string();
                 if let Err(e) = fs::create_dir(name) {
-                    self.log_print(format!("エラー! {e}"))
+                    self.log_print(format!("エラー! {e}\n"))
                 }
             }
 
@@ -897,11 +897,11 @@ impl Executor {
                 let name = self.pop_stack().get_string();
                 if Path::new(name.as_str()).is_dir() {
                     if let Err(e) = fs::remove_dir(name) {
-                        self.log_print(format!("エラー! {e}"))
+                        self.log_print(format!("エラー! {e}\n"))
                     }
                 } else {
                     if let Err(e) = fs::remove_file(name) {
-                        self.log_print(format!("エラー! {e}"))
+                        self.log_print(format!("エラー! {e}\n"))
                     }
                 }
             }
