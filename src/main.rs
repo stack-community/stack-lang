@@ -884,6 +884,28 @@ impl Executor {
                 }
             }
 
+            // ディレクトリを作成
+            "mkdir" => {
+                let name = self.pop_stack().get_string();
+                if let Err(e) = fs::create_dir(name) {
+                    self.log_print(format!("エラー! {e}"))
+                }
+            }
+
+            // アイテムを削除
+            "rm" => {
+                let name = self.pop_stack().get_string();
+                if Path::new(name.as_str()).is_dir() {
+                    if let Err(e) = fs::remove_dir(name) {
+                        self.log_print(format!("エラー! {e}"))
+                    }
+                } else {
+                    if let Err(e) = fs::remove_file(name) {
+                        self.log_print(format!("エラー! {e}"))
+                    }
+                }
+            }
+
             // ファイル一覧のリスト
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
