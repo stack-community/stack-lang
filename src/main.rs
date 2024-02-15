@@ -1,5 +1,6 @@
 use opener;
 use rand::seq::SliceRandom;
+use regex::Regex;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
@@ -512,6 +513,36 @@ impl Executor {
                 let word = self.pop_stack().get_string();
                 let text = self.pop_stack().get_string();
                 self.stack.push(Type::Bool(text.contains(&word)))
+            }
+
+            // 正規表現で検索
+            "regex" => {
+                let pt = self.pop_stack().get_string();
+                let patern: Regex;
+                match Regex::new(pt.as_str()) {
+                    Ok(i) => patern = i,
+                    Err(_) => {
+                        self.log_print("エラー! 正規表現が不正です\n".to_string());
+                        return;
+                    }
+                }
+
+                let text = self.pop_stack().get_string();
+
+                let value;
+                match patern.captures(text.as_str()) {
+                    Some(i) => value = i,
+                    None => {
+                        self.stack.push(Type::List(vec![]));
+                        return;
+                    }
+                }
+
+                let mut list: Vec<Type> = Vec::new();
+                for i in 0..value.len() - 1 {
+                    list.push(Type::String(value.at(i).unwrap_or("").to_string()))
+                }
+                self.stack.push(Type::List(list));
             }
 
             // 入出力コマンド
