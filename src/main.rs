@@ -581,6 +581,7 @@ impl Executor {
                 }
             }
 
+            // スレッドを作成
             "thread" => {
                 let code = self.pop_stack().get_string();
                 let mut executor = self.clone();
