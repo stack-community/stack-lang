@@ -529,18 +529,9 @@ impl Executor {
 
                 let text = self.pop_stack().get_string();
 
-                let value;
-                match patern.captures(text.as_str()) {
-                    Some(i) => value = i,
-                    None => {
-                        self.stack.push(Type::List(vec![]));
-                        return;
-                    }
-                }
-
                 let mut list: Vec<Type> = Vec::new();
-                for i in 0..value.len() - 1 {
-                    list.push(Type::String(value.at(i).unwrap_or("").to_string()))
+                for i in patern.captures_iter(text.as_str()) {
+                    list.push(Type::String(i[0].to_string()))
                 }
                 self.stack.push(Type::List(list));
             }
