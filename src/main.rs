@@ -12,10 +12,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 fn main() {
     // コマンドライン引数を読み込む
     let args = env::args().collect::<Vec<_>>();
-    // ファイルを開く
-    if let Ok(code) = get_file_contents(args[1].clone()) {
-        // 実行モードを判定する
-        if args.len() > 2 {
+    if args.len() > 2 {
+        // ファイルを開く
+        if let Ok(code) = get_file_contents(args[1].clone()) {
+            // 実行モードを判定する
             if args[2].contains("-d") {
                 let mut executor = Executor::new(Mode::Debug);
                 executor.evaluate_program(code); //デバッグ実行
@@ -23,30 +23,34 @@ fn main() {
                 let mut executor = Executor::new(Mode::Script);
                 executor.evaluate_program(code); // スクリプト実行
             }
-        } else if args.len() > 1 {
-            // ファイルを開く
+        } else {
+            println!("エラー! ファイルが見つかりません")
+        }
+    } else if args.len() > 1 {
+        // ファイルを開く
+        if let Ok(code) = get_file_contents(args[1].clone()) {
             let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
             executor.evaluate_program(code);
         } else {
-            // タイトルを表示する
-            println!("Stack プログラミング言語");
-            let mut executor = Executor::new(Mode::Debug);
-            // REPL実行
-            loop {
-                let mut code = String::new();
-                loop {
-                    let inputed = input("> ");
-                    code += &format!("{inputed}\n");
-                    if inputed.is_empty() {
-                        break;
-                    }
-                }
-
-                executor.evaluate_program(code)
-            }
+            println!("エラー! ファイルが見つかりません")
         }
     } else {
-        println!("エラー! ファイルが見つかりません")
+        // タイトルを表示する
+        println!("Stack プログラミング言語");
+        let mut executor = Executor::new(Mode::Debug);
+        // REPL実行
+        loop {
+            let mut code = String::new();
+            loop {
+                let inputed = input("> ");
+                code += &format!("{inputed}\n");
+                if inputed.is_empty() {
+                    break;
+                }
+            }
+
+            executor.evaluate_program(code)
+        }
     }
 }
 
