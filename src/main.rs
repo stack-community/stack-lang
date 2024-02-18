@@ -1,4 +1,3 @@
-use opener;
 use rand::seq::SliceRandom;
 use regex::Regex;
 use std::collections::HashMap;
@@ -13,45 +12,41 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 fn main() {
     // コマンドライン引数を読み込む
     let args = env::args().collect::<Vec<_>>();
-    if args.len() > 2 {
-        // ファイルを開く
-        if let Ok(code) = get_file_contents(args[2].clone()) {
-            // 実行モードを判定する
-            if args[1].contains("d") {
+    // ファイルを開く
+    if let Ok(code) = get_file_contents(args[1].clone()) {
+        // 実行モードを判定する
+        if args.len() > 2 {
+            if args[2].contains("-d") {
                 let mut executor = Executor::new(Mode::Debug);
                 executor.evaluate_program(code); //デバッグ実行
             } else {
                 let mut executor = Executor::new(Mode::Script);
                 executor.evaluate_program(code); // スクリプト実行
             }
-        } else {
-            println!("エラー! ファイルが見つかりません")
-        }
-    } else if args.len() > 1 {
-        // ファイルを開く
-        if let Ok(code) = get_file_contents(args[1].clone()) {
+        } else if args.len() > 1 {
+            // ファイルを開く
             let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
             executor.evaluate_program(code);
         } else {
-            println!("エラー! ファイルが見つかりません")
+            // タイトルを表示する
+            println!("Stack プログラミング言語");
+            let mut executor = Executor::new(Mode::Debug);
+            // REPL実行
+            loop {
+                let mut code = String::new();
+                loop {
+                    let inputed = input("> ");
+                    code += &format!("{inputed}\n");
+                    if inputed.is_empty() {
+                        break;
+                    }
+                }
+
+                executor.evaluate_program(code)
+            }
         }
     } else {
-        // タイトルを表示する
-        println!("Stack プログラミング言語");
-        let mut executor = Executor::new(Mode::Debug);
-        // REPL実行
-        loop {
-            let mut code = String::new();
-            loop {
-                let inputed = input("> ");
-                code += &format!("{inputed}\n");
-                if inputed.is_empty() {
-                    break;
-                }
-            }
-
-            executor.evaluate_program(code)
-        }
+        println!("エラー! ファイルが見つかりません")
     }
 }
 
@@ -65,7 +60,7 @@ fn get_file_contents(name: String) -> Result<String, Error> {
 
 /// 標準入力を受け取る
 fn input(prompt: &str) -> String {
-    print!("{}", prompt.to_string());
+    print!("{}", prompt);
     io::stdout().flush().unwrap();
     let mut result = String::new();
     io::stdin().read_line(&mut result).ok();
@@ -132,10 +127,10 @@ impl Type {
     /// 論理値を取得
     fn get_bool(&mut self) -> bool {
         match self {
-            Type::String(s) => s.len() != 0,
+            Type::String(s) => !s.is_empty(),
             Type::Number(i) => *i != 0.0,
             Type::Bool(b) => *b,
-            Type::List(l) => l.len() != 0,
+            Type::List(l) => !l.is_empty(),
         }
     }
 
@@ -205,11 +200,7 @@ impl Executor {
 
     /// 構文解析
     fn analyze_syntax(&mut self, code: String) -> Vec<String> {
-        let code = code
-            .replace("\n", " ")
-            .replace("\t", " ")
-            .replace("\r", " ")
-            .replace("　", " ");
+        let code = code.replace(['\n', '\t', '\r', '　'], " ");
 
         let mut syntax = Vec::new();
         let mut buffer = String::new();
@@ -319,8 +310,8 @@ impl Executor {
             }
 
             // コメントを処理
-            if token.contains("#") {
-                self.log_print(format!("※ コメント「{}」\n", token.replace("#", "")));
+            if token.contains('#') {
+                self.log_print(format!("※ コメント「{}」\n", token.replace('#', "")));
                 continue;
             }
 
@@ -518,14 +509,13 @@ impl Executor {
             // 正規表現で検索
             "regex" => {
                 let pt = self.pop_stack().get_string();
-                let patern: Regex;
-                match Regex::new(pt.as_str()) {
-                    Ok(i) => patern = i,
+                let patern: Regex = match Regex::new(pt.as_str()) {
+                    Ok(i) => i,
                     Err(_) => {
                         self.log_print("エラー! 正規表現が不正です\n".to_string());
                         return;
                     }
-                }
+                };
 
                 let text = self.pop_stack().get_string();
 
@@ -649,7 +639,7 @@ impl Executor {
                 let index = self.pop_stack().get_number() as usize;
                 let mut list = self.pop_stack().get_list();
                 if list.len() > index {
-                    list.remove(index as usize);
+                    list.remove(index);
                     self.stack.push(Type::List(list));
                 } else {
                     self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
@@ -922,10 +912,8 @@ impl Executor {
                     if let Err(e) = fs::remove_dir(name) {
                         self.log_print(format!("エラー! {e}\n"))
                     }
-                } else {
-                    if let Err(e) = fs::remove_file(name) {
-                        self.log_print(format!("エラー! {e}\n"))
-                    }
+                } else if let Err(e) = fs::remove_file(name) {
+                    self.log_print(format!("エラー! {e}\n"))
                 }
             }
 
@@ -937,7 +925,7 @@ impl Executor {
                             entry
                                 .ok()
                                 .and_then(|e| e.file_name().into_string().ok())
-                                .map(|x| Type::String(x))
+                                .map(Type::String)
                         })
                         .collect();
                     self.stack.push(Type::List(value));
