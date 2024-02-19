@@ -68,7 +68,7 @@ fn input(prompt: &str) -> String {
     io::stdout().flush().unwrap();
     let mut result = String::new();
     io::stdin().read_line(&mut result).ok();
-    return result.trim().parse().ok().unwrap();
+    result.trim().to_string()
 }
 
 /// 実行モード
