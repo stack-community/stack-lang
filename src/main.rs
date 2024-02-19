@@ -178,7 +178,7 @@ impl Executor {
         }
     }
 
-    /// メモリを表示
+    /// メモリの変数を表示
     fn show_variables(&mut self) {
         self.log_print(format!(
             "メモリ内部の変数 {{ {} }}\n",
@@ -191,6 +191,7 @@ impl Executor {
         ));
     }
 
+    // スタック内部を表示
     fn show_stack(&mut self) {
         self.log_print(format!(
             "Stack〔 {} 〕",
@@ -204,6 +205,7 @@ impl Executor {
 
     /// 構文解析
     fn analyze_syntax(&mut self, code: String) -> Vec<String> {
+        // タブや改行・全角スペースを半角スペースに変換する
         let code = code.replace(['\n', '\t', '\r', '　'], " ");
 
         let mut syntax = Vec::new();
@@ -258,37 +260,29 @@ impl Executor {
 
     /// プログラムを評価する
     fn evaluate_program(&mut self, code: String) {
-        // トークンを整える
+        // 構文解析してトークン列にする
         let syntax: Vec<String> = self.analyze_syntax(code);
 
         for token in syntax {
-            // スタック内部を表示する
-            self.show_stack();
+            self.show_stack(); // スタック内部を表示する
             self.log_print(format!(" ←  {}\n", token));
 
-            // 数値に変換できたらスタックに積む
-            if let Ok(i) = token.parse::<f64>() {
-                self.stack.push(Type::Number(i));
-                continue;
-            }
-
-            // 論理値をスタックに積む
-            if token == "true" || token == "false" {
-                self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
-                continue;
-            }
-
-            // 文字列をスタックに積む
+            // 加工用の文字ベクタ
             let chars: Vec<char> = token.chars().collect();
-            if chars[0] == '(' && chars[chars.len() - 1] == ')' {
+
+            if let Ok(i) = token.parse::<f64>() {
+                // 数値に変換できたらスタックに積む
+                self.stack.push(Type::Number(i));
+            } else if token == "true" || token == "false" {
+                // 論理値をスタックに積む
+                self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
+            } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
+                // 文字列をスタックに積む
                 self.stack
                     .push(Type::String(token[1..token.len() - 1].to_string()));
-                continue;
-            }
-
-            // リストを処理
-            if chars[0] == '[' && chars[chars.len() - 1] == ']' {
-                let old_len = self.stack.len();
+            } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
+                // リストをスタックに積む
+                let old_len = self.stack.len(); // 本来のスタックの大きさ
                 let slice = &token[1..token.len() - 1];
                 let token: Vec<_> = slice.split_whitespace().map(|x| x.to_string()).collect();
                 self.evaluate_program(
@@ -298,29 +292,23 @@ impl Executor {
                         .collect::<Vec<_>>()
                         .join(" "),
                 );
+                // スタックの増加分をリストの要素にする
                 let mut list = Vec::new();
                 for _ in old_len..self.stack.len() {
                     list.push(self.pop_stack());
                 }
-                list.reverse();
+                list.reverse(); // スタックから取り出したのは逆なので反転させる
                 self.stack.push(Type::List(list));
-                continue;
-            }
-
-            // 変数を読み込む
-            if let Some(i) = self.memory.get(&token) {
+            } else if let Some(i) = self.memory.get(&token) {
+                // 変数を読み込む
                 self.stack.push(i.clone());
-                continue;
-            }
-
-            // コメントを処理
-            if token.contains('#') {
+            } else if token.contains('#') {
+                // コメントを処理
                 self.log_print(format!("※ コメント「{}」\n", token.replace('#', "")));
-                continue;
+            } else {
+                // コマンドを実行する
+                self.execute_command(token);
             }
-
-            // コマンドを実行する
-            self.execute_command(token);
         }
 
         // 実行後のスタックを表示
