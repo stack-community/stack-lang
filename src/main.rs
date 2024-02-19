@@ -921,6 +921,13 @@ impl Executor {
                 }
             }
 
+            // アイテム名を変更
+            "rename" => {
+                let to = self.pop_stack().get_string();
+                let from = self.pop_stack().get_string();
+                let _result = fs::rename(from, to);
+            }
+
             // ファイル一覧のリスト
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
