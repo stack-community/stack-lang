@@ -171,7 +171,7 @@ impl Executor {
         }
     }
 
-    /// ログ表示
+    /// ログ出力
     fn log_print(&mut self, msg: String) {
         if let Mode::Debug = self.mode {
             print!("{msg}");
