@@ -284,14 +284,7 @@ impl Executor {
                 // リストをスタックに積む
                 let old_len = self.stack.len(); // 本来のスタックの大きさ
                 let slice = &token[1..token.len() - 1];
-                let token: Vec<_> = slice.split_whitespace().map(|x| x.to_string()).collect();
-                self.evaluate_program(
-                    token
-                        .into_iter()
-                        .map(|x| x.to_string())
-                        .collect::<Vec<_>>()
-                        .join(" "),
-                );
+                self.evaluate_program(slice.to_string());
                 // スタックの増加分をリストの要素にする
                 let mut list = Vec::new();
                 for _ in old_len..self.stack.len() {
