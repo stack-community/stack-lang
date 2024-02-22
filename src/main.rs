@@ -511,8 +511,8 @@ impl Executor {
 
             // 正規表現で検索
             "regex" => {
-                let pt = self.pop_stack().get_string();
-                let patern: Regex = match Regex::new(pt.as_str()) {
+                let patern = self.pop_stack().get_string();
+                let patern: Regex = match Regex::new(patern.as_str()) {
                     Ok(i) => i,
                     Err(_) => {
                         self.log_print("エラー! 正規表現が不正です\n".to_string());
