@@ -924,7 +924,9 @@ impl Executor {
             "rename" => {
                 let to = self.pop_stack().get_string();
                 let from = self.pop_stack().get_string();
-                let _result = fs::rename(from, to);
+                if let Err(e) = fs::rename(from, to) {
+                    self.log_print(format!("エラー! {e}\n"))
+                }
             }
 
             // ファイル一覧のリスト
