@@ -766,12 +766,8 @@ impl Executor {
 
             // リストの長さ
             "len" => {
-                let data = self.pop_stack();
-                self.stack.push(Type::Number(match data {
-                    Type::List(l) => l.len() as f64,
-                    Type::String(s) => s.chars().count() as f64,
-                    _ => 1f64,
-                }));
+                let data = self.pop_stack().get_list();
+                self.stack.push(Type::Number(data.len() as f64));
             }
 
             // メモリ管理コマンド
