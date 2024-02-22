@@ -362,6 +362,24 @@ impl Executor {
                 self.stack.push(Type::Number(a.round()));
             }
 
+            // 三角関数サイン
+            "sin" => {
+                let number = self.pop_stack().get_number();
+                self.stack.push(Type::Number(number.sin()))
+            }
+
+            // 三角関数コサイン
+            "cos" => {
+                let number = self.pop_stack().get_number();
+                self.stack.push(Type::Number(number.cos()))
+            }
+
+            // 三角関数タンジェント
+            "tan" => {
+                let number = self.pop_stack().get_number();
+                self.stack.push(Type::Number(number.tan()))
+            }
+
             // AND論理演算
             "and" => {
                 let b = self.pop_stack().get_bool();
