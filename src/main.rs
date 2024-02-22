@@ -881,7 +881,9 @@ impl Executor {
 
             // ファイルを開く
             "open" => {
-                let _result = opener::open(self.pop_stack().get_string());
+                if let Err(e) = opener::open(self.pop_stack().get_string()) {
+                    self.log_print(format!("エラー! {e}\n"))
+                }
             }
 
             //カレントディレクトリを変更
