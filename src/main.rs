@@ -208,11 +208,11 @@ impl Executor {
         // タブや改行・全角スペースを半角スペースに変換する
         let code = code.replace(['\n', '\t', '\r', '　'], " ");
 
-        let mut syntax = Vec::new();
-        let mut buffer = String::new();
-        let mut in_brackets = 0;
-        let mut in_parentheses = 0;
-        let mut in_hash = false;
+        let mut syntax = Vec::new(); // トークン列
+        let mut buffer = String::new(); //トークンの仮保存
+        let mut in_brackets = 0; // 文字列のネスト構造
+        let mut in_parentheses = 0; // リストのネスト構造
+        let mut in_hash = false; // コメントか否か 
 
         for c in code.chars() {
             match c {
@@ -267,11 +267,12 @@ impl Executor {
             self.show_stack(); // スタック内部を表示する
             self.log_print(format!(" ←  {}\n", token));
 
-            // 加工用の文字ベクタ
+            // トークン処理用の文字ベクタ
             let chars: Vec<char> = token.chars().collect();
 
+            // トークンが何なのか判定する
             if let Ok(i) = token.parse::<f64>() {
-                // 数値に変換できたらスタックに積む
+                // 数値をスタックに積む
                 self.stack.push(Type::Number(i));
             } else if token == "true" || token == "false" {
                 // 論理値をスタックに積む
