@@ -536,8 +536,9 @@ impl Executor {
             "write-file" => {
                 let mut file =
                     File::create(self.pop_stack().get_string()).expect("Failed to create file");
-                file.write_all(self.pop_stack().get_string().as_bytes())
-                    .expect("Failed to write file");
+                if let Err(e) = file.write_all(self.pop_stack().get_string().as_bytes()) {
+                    self.log_print(format!("エラー! {}\n", e))
+                }
             }
 
             // ファイル読み込み
