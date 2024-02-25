@@ -180,15 +180,12 @@ impl Executor {
 
     /// メモリの変数を表示
     fn show_variables(&mut self) {
-        self.log_print(format!(
-            "メモリ内部の変数 {{ {} }}\n",
-            self.memory
-                .clone()
-                .iter()
-                .map(|(name, value)| { format!("'{name}': {}", value.display()) })
-                .collect::<Vec<String>>()
-                .join(", ")
-        ));
+        self.log_print("メモリ内部の変数 {\n".to_string());
+        let max = self.memory.keys().map(|s| s.len()).max().unwrap_or(0);
+        for (name, value) in self.memory.clone() {
+            self.log_print(format!(" {:>width$}: {}\n", name, value.display(), width=max))
+        }
+        self.log_print("}\n".to_string())
     }
 
     // スタック内部を表示
@@ -212,7 +209,7 @@ impl Executor {
         let mut buffer = String::new(); //トークンの仮保存
         let mut in_brackets = 0; // 文字列のネスト構造
         let mut in_parentheses = 0; // リストのネスト構造
-        let mut in_hash = false; // コメントか否か 
+        let mut in_hash = false; // コメントか否か
 
         for c in code.chars() {
             match c {
