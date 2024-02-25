@@ -14,25 +14,27 @@ fn main() {
     let args = env::args().collect::<Vec<_>>();
     if args.len() > 2 {
         // ファイルを開く
-        if let Ok(code) = get_file_contents(args[1].clone()) {
-            // 実行モードを判定する
-            if args[2].contains("-d") {
-                let mut executor = Executor::new(Mode::Debug);
-                executor.evaluate_program(code); //デバッグ実行
-            } else {
-                let mut executor = Executor::new(Mode::Script);
-                executor.evaluate_program(code); // スクリプト実行
+        match get_file_contents(args[1].clone()) {
+            Ok(code) => {
+                // 実行モードを判定する
+                if args[2].contains("-d") {
+                    let mut executor = Executor::new(Mode::Debug);
+                    executor.evaluate_program(code); //デバッグ実行
+                } else {
+                    let mut executor = Executor::new(Mode::Script);
+                    executor.evaluate_program(code); // スクリプト実行
+                }
             }
-        } else {
-            println!("エラー! ファイルが見つかりません")
+            Err(e) => println!("エラー! {e}"),
         }
     } else if args.len() > 1 {
         // ファイルを開く
-        if let Ok(code) = get_file_contents(args[1].clone()) {
-            let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
-            executor.evaluate_program(code);
-        } else {
-            println!("エラー! ファイルが見つかりません")
+        match get_file_contents(args[1].clone()) {
+            Ok(code) => {
+                let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
+                executor.evaluate_program(code);
+            }
+            Err(e) => println!("エラー! {e}"),
         }
     } else {
         // タイトルを表示する
@@ -183,7 +185,12 @@ impl Executor {
         self.log_print("メモリ内部の変数 {\n".to_string());
         let max = self.memory.keys().map(|s| s.len()).max().unwrap_or(0);
         for (name, value) in self.memory.clone() {
-            self.log_print(format!(" {:>width$}: {}\n", name, value.display(), width=max))
+            self.log_print(format!(
+                " {:>width$}: {}\n",
+                name,
+                value.display(),
+                width = max
+            ))
         }
         self.log_print("}\n".to_string())
     }
