@@ -10,43 +10,43 @@ use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 fn main() {
-    // コマンドライン引数を読み込む
+    // Reading command line arguments
     let args = env::args().collect::<Vec<_>>();
     if args.len() > 2 {
-        // ファイルを開く
+        // Open the script file
         match get_file_contents(args[1].clone()) {
             Ok(code) => {
-                // 実行モードを判定する
+                // Judge execution mode
                 if args[2].contains("-d") {
                     let mut executor = Executor::new(Mode::Debug);
-                    executor.evaluate_program(code); //デバッグ実行
+                    executor.evaluate_program(code); // Debug execution
                 } else {
                     let mut executor = Executor::new(Mode::Script);
-                    executor.evaluate_program(code); // スクリプト実行
+                    executor.evaluate_program(code); // Script execution
                 }
             }
-            Err(e) => println!("エラー! {e}"),
+            Err(e) => println!("Error! {e}"),
         }
     } else if args.len() > 1 {
-        // ファイルを開く
+        // Open the script file
         match get_file_contents(args[1].clone()) {
             Ok(code) => {
-                let mut executor = Executor::new(Mode::Script); //デフォルト値はスクリプト実行
-                executor.evaluate_program(code);
+                let mut executor = Executor::new(Mode::Script);
+                executor.evaluate_program(code); // Default is script execution
             }
-            Err(e) => println!("エラー! {e}"),
+            Err(e) => println!("Error! {e}"),
         }
     } else {
-        // タイトルを表示する
-        println!("Stack プログラミング言語");
+        // Show a title
+        println!("Stack Programming Language");
         let mut executor = Executor::new(Mode::Debug);
-        // REPL実行
+        // REPL Execution
         loop {
             let mut code = String::new();
             loop {
-                let inputed = input("> ");
-                code += &format!("{inputed}\n");
-                if inputed.is_empty() {
+                let enter = input("> ");
+                code += &format!("{enter}\n");
+                if enter.is_empty() {
                     break;
                 }
             }
@@ -56,7 +56,7 @@ fn main() {
     }
 }
 
-/// ファイルを読み込む
+/// Read string of the file
 fn get_file_contents(name: String) -> Result<String, Error> {
     let mut f = File::open(name.trim())?;
     let mut contents = String::new();
@@ -64,7 +64,7 @@ fn get_file_contents(name: String) -> Result<String, Error> {
     Ok(contents)
 }
 
-/// 標準入力を受け取る
+/// Get standard input
 fn input(prompt: &str) -> String {
     print!("{}", prompt);
     io::stdout().flush().unwrap();
@@ -73,25 +73,25 @@ fn input(prompt: &str) -> String {
     result.trim().to_string()
 }
 
-/// 実行モード
+/// Execution Mode
 #[derive(Clone, Debug)]
 enum Mode {
-    Script, // スクリプト実行
-    Debug,  // デバッグ実行
+    Script, // Script execution
+    Debug,  // Debug execution
 }
 
-/// データ型
+/// Data type
 #[derive(Clone, Debug)]
 enum Type {
-    Number(f64),     //数値
-    String(String),  //文字列
-    Bool(bool),      //論理
-    List(Vec<Type>), //リスト
+    Number(f64),
+    String(String),
+    Bool(bool),
+    List(Vec<Type>),
 }
 
-/// メソッド実装
+/// Implement methods
 impl Type {
-    /// ディスプレイに表示
+    /// Show data to display
     fn display(&self) -> String {
         match self {
             Type::Number(num) => num.to_string(),
@@ -104,7 +104,7 @@ impl Type {
         }
     }
 
-    /// 文字列を取得
+    /// Get string form data
     fn get_string(&mut self) -> String {
         match self {
             Type::String(s) => s.to_string(),
@@ -114,7 +114,7 @@ impl Type {
         }
     }
 
-    /// 数値を取得
+    /// Get number from data
     fn get_number(&mut self) -> f64 {
         match self {
             Type::String(s) => s.parse().unwrap_or(0.0),
@@ -130,7 +130,7 @@ impl Type {
         }
     }
 
-    /// 論理値を取得
+    /// Get bool from data
     fn get_bool(&mut self) -> bool {
         match self {
             Type::String(s) => !s.is_empty(),
@@ -140,7 +140,7 @@ impl Type {
         }
     }
 
-    ///　リストを取得
+    ///　Get list form data
     fn get_list(&mut self) -> Vec<Type> {
         match self {
             Type::String(s) => s
@@ -155,16 +155,16 @@ impl Type {
     }
 }
 
-/// プログラム実行を管理
+/// Manage program execution
 #[derive(Clone, Debug)]
 struct Executor {
-    stack: Vec<Type>,              // スタック
-    memory: HashMap<String, Type>, // 変数のメモリ領域
-    mode: Mode,                    // 実行モード
+    stack: Vec<Type>,              // Data stack
+    memory: HashMap<String, Type>, // Variable's memory
+    mode: Mode,                    // Execution mode
 }
 
 impl Executor {
-    /// コンストラクタ
+    /// Constructor
     fn new(mode: Mode) -> Executor {
         Executor {
             stack: Vec::new(),
@@ -173,16 +173,16 @@ impl Executor {
         }
     }
 
-    /// ログ出力
+    /// Output log
     fn log_print(&mut self, msg: String) {
         if let Mode::Debug = self.mode {
             print!("{msg}");
         }
     }
 
-    /// メモリの変数を表示
+    /// Show variable inside memory
     fn show_variables(&mut self) {
-        self.log_print("メモリ内部の変数 {\n".to_string());
+        self.log_print("Variables {\n".to_string());
         let max = self.memory.keys().map(|s| s.len()).max().unwrap_or(0);
         for (name, value) in self.memory.clone() {
             self.log_print(format!(
@@ -195,7 +195,7 @@ impl Executor {
         self.log_print("}\n".to_string())
     }
 
-    // スタック内部を表示
+    /// Show inside the stack
     fn show_stack(&mut self) {
         self.log_print(format!(
             "Stack〔 {} 〕",
@@ -207,16 +207,16 @@ impl Executor {
         ))
     }
 
-    /// 構文解析
+    /// Parse token by analyzing syntax
     fn analyze_syntax(&mut self, code: String) -> Vec<String> {
-        // タブや改行・全角スペースを半角スペースに変換する
+        // Convert tabs, line breaks, and full-width spaces to half-width spaces
         let code = code.replace(['\n', '\t', '\r', '　'], " ");
 
-        let mut syntax = Vec::new(); // トークン列
-        let mut buffer = String::new(); //トークンの仮保存
-        let mut in_brackets = 0; // 文字列のネスト構造
-        let mut in_parentheses = 0; // リストのネスト構造
-        let mut in_hash = false; // コメントか否か
+        let mut syntax = Vec::new(); // Token string
+        let mut buffer = String::new(); // Temporary storage
+        let mut in_brackets = 0; // String's nest structure
+        let mut in_parentheses = 0; // List's nest structure
+        let mut in_hash = false; // Is it Comment
 
         for c in code.chars() {
             match c {
@@ -262,164 +262,164 @@ impl Executor {
         syntax
     }
 
-    /// プログラムを評価する
+    /// evaluate string as program
     fn evaluate_program(&mut self, code: String) {
-        // 構文解析してトークン列にする
+        // Parse into token string
         let syntax: Vec<String> = self.analyze_syntax(code);
 
         for token in syntax {
-            self.show_stack(); // スタック内部を表示する
+            self.show_stack(); // Show inside stack to debug
             self.log_print(format!(" ←  {}\n", token));
 
-            // トークン処理用の文字ベクタ
+            // Character vector for token processing
             let chars: Vec<char> = token.chars().collect();
 
-            // トークンが何なのか判定する
+            // Judge what the token is
             if let Ok(i) = token.parse::<f64>() {
-                // 数値をスタックに積む
+                // Push number on stack
                 self.stack.push(Type::Number(i));
             } else if token == "true" || token == "false" {
-                // 論理値をスタックに積む
+                // Push bool on stack
                 self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
             } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
-                // 文字列をスタックに積む
+                // Push string on stack
                 self.stack
                     .push(Type::String(token[1..token.len() - 1].to_string()));
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
-                // リストをスタックに積む
-                let old_len = self.stack.len(); // 本来のスタックの大きさ
+                // Push list on stack
+                let old_len = self.stack.len(); // length of old stack
                 let slice = &token[1..token.len() - 1];
                 self.evaluate_program(slice.to_string());
-                // スタックの増加分をリストの要素にする
+                // Make increment of stack an element of list
                 let mut list = Vec::new();
                 for _ in old_len..self.stack.len() {
                     list.push(self.pop_stack());
                 }
-                list.reverse(); // スタックから取り出したのは逆なので反転させる
+                list.reverse(); // reverse list
                 self.stack.push(Type::List(list));
             } else if let Some(i) = self.memory.get(&token) {
-                // 変数を読み込む
+                // Push variable's data on stack
                 self.stack.push(i.clone());
             } else if token.contains('#') {
-                // コメントを処理
-                self.log_print(format!("※ コメント「{}」\n", token.replace('#', "")));
+                // Processing comments
+                self.log_print(format!("* Comment \"{}\"\n", token.replace('#', "")));
             } else {
-                // コマンドを実行する
+                // Else, execute as command
                 self.execute_command(token);
             }
         }
 
-        // 実行後のスタックを表示
+        // Show inside stack, after execution
         self.show_stack();
         self.log_print("\n".to_string());
     }
 
-    /// コマンドを実行する
+    /// execute string as commands
     fn execute_command(&mut self, command: String) {
         match command.as_str() {
-            // 演算コマンド
+            // Commands of calculation
 
-            // 足し算
+            // addition
             "add" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a + b));
             }
 
-            // 引き算
+            // Subtraction
             "sub" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a - b));
             }
 
-            // 掛け算
+            // Multiplication
             "mul" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a * b));
             }
 
-            // 割り算
+            // Division
             "div" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a / b));
             }
 
-            // 商の余り
+            // Remainder of division
             "mod" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a % b));
             }
 
-            // べき乗
+            // Exponentiation
             "pow" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a.powf(b)));
             }
 
-            // 四捨五入
+            // Rounding off
             "round" => {
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Number(a.round()));
             }
 
-            // 三角関数サイン
+            // Trigonometric sine
             "sin" => {
                 let number = self.pop_stack().get_number();
                 self.stack.push(Type::Number(number.sin()))
             }
 
-            // 三角関数コサイン
+            // Trigonometric cosine
             "cos" => {
                 let number = self.pop_stack().get_number();
                 self.stack.push(Type::Number(number.cos()))
             }
 
-            // 三角関数タンジェント
+            // Trigonometric tangent
             "tan" => {
                 let number = self.pop_stack().get_number();
                 self.stack.push(Type::Number(number.tan()))
             }
 
-            // AND論理演算
+            // Logical operations of AND
             "and" => {
                 let b = self.pop_stack().get_bool();
                 let a = self.pop_stack().get_bool();
                 self.stack.push(Type::Bool(a && b));
             }
 
-            // OR論理演算
+            // Logical operations of OR
             "or" => {
                 let b = self.pop_stack().get_bool();
                 let a = self.pop_stack().get_bool();
                 self.stack.push(Type::Bool(a || b));
             }
 
-            // NOT論理演算
+            // Logical operations of NOT
             "not" => {
                 let b = self.pop_stack().get_bool();
                 self.stack.push(Type::Bool(!b));
             }
 
-            // 等しいか
+            // Is it equal
             "equal" => {
                 let b = self.pop_stack().get_string();
                 let a = self.pop_stack().get_string();
                 self.stack.push(Type::Bool(a == b));
             }
 
-            // 未満か
+            // Is it less
             "less" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
                 self.stack.push(Type::Bool(a < b));
             }
 
-            // ランダム値を取得
+            // Get random value from list
             "rand" => {
                 let list = self.pop_stack().get_list();
                 let result = match list.choose(&mut rand::thread_rng()) {
@@ -429,54 +429,54 @@ impl Executor {
                 self.stack.push(result);
             }
 
-            // シーケンス値をシャッフル
+            // Shuffle list by random
             "shuffle" => {
                 let mut list = self.pop_stack().get_list();
                 list.shuffle(&mut rand::thread_rng());
                 self.stack.push(Type::List(list));
             }
 
-            // 文字列操作コマンド
+            // Commands of string processing
 
-            // 文字列を回数分リピート
+            // Repeat string a number of times
             "repeat" => {
                 let count = self.pop_stack().get_number(); // 回数
                 let text = self.pop_stack().get_string(); // 文字列
                 self.stack.push(Type::String(text.repeat(count as usize)));
             }
 
-            // 数値からユニコード文字列を取得
+            // Get unicode character form number
             "decode" => {
                 let code = self.pop_stack().get_number();
                 let result = char::from_u32(code as u32);
                 match result {
                     Some(c) => self.stack.push(Type::String(c.to_string())),
                     None => {
-                        self.log_print("エラー! 数値デコードに失敗しました\n".to_string());
+                        self.log_print("Error! failed of number decoding\n".to_string());
                         self.stack.push(Type::Number(code));
                     }
                 }
             }
 
-            // 文字列をUTF-8でエンコード
+            // Encode string by UTF-8
             "encode" => {
                 let string = self.pop_stack().get_string();
                 if let Some(first_char) = string.chars().next() {
                     self.stack.push(Type::Number((first_char as u32) as f64));
                 } else {
-                    self.log_print("エラー! 文字列のエンコードに失敗しました\n".to_string());
+                    self.log_print("Error! failed of string encoding\n".to_string());
                     self.stack.push(Type::String(string))
                 }
             }
 
-            // 文字列を結合
+            // Concat the string
             "concat" => {
                 let b = self.pop_stack().get_string();
                 let a = self.pop_stack().get_string();
                 self.stack.push(Type::String(a + &b));
             }
 
-            // 文字列の置換
+            // Replacing string
             "replace" => {
                 let after = self.pop_stack().get_string();
                 let before = self.pop_stack().get_string();
@@ -484,7 +484,7 @@ impl Executor {
                 self.stack.push(Type::String(text.replace(&before, &after)))
             }
 
-            // 文字列を分割
+            // split string by key
             "split" => {
                 let key = self.pop_stack().get_string();
                 let text = self.pop_stack().get_string();
@@ -495,7 +495,7 @@ impl Executor {
                 ));
             }
 
-            // リストを結合した文字列を生成
+            // Generate a string by concat list
             "join" => {
                 let key = self.pop_stack().get_string();
                 let mut list = self.pop_stack().get_list();
@@ -507,20 +507,20 @@ impl Executor {
                 ))
             }
 
-            // 含まれているか
+            // Is it finding in string
             "find" => {
                 let word = self.pop_stack().get_string();
                 let text = self.pop_stack().get_string();
                 self.stack.push(Type::Bool(text.contains(&word)))
             }
 
-            // 正規表現で検索
+            // Search by regular expression
             "regex" => {
-                let patern = self.pop_stack().get_string();
-                let patern: Regex = match Regex::new(patern.as_str()) {
+                let pattern = self.pop_stack().get_string();
+                let pattern: Regex = match Regex::new(pattern.as_str()) {
                     Ok(i) => i,
-                    Err(_) => {
-                        self.log_print("エラー! 正規表現が不正です\n".to_string());
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
                         return;
                     }
                 };
@@ -528,39 +528,39 @@ impl Executor {
                 let text = self.pop_stack().get_string();
 
                 let mut list: Vec<Type> = Vec::new();
-                for i in patern.captures_iter(text.as_str()) {
+                for i in pattern.captures_iter(text.as_str()) {
                     list.push(Type::String(i[0].to_string()))
                 }
                 self.stack.push(Type::List(list));
             }
 
-            // 入出力コマンド
+            // Commands of I/O
 
-            // ファイル書き込み
+            // Write string in the file
             "write-file" => {
                 let mut file =
                     File::create(self.pop_stack().get_string()).expect("Failed to create file");
                 if let Err(e) = file.write_all(self.pop_stack().get_string().as_bytes()) {
-                    self.log_print(format!("エラー! {}\n", e))
+                    self.log_print(format!("Error! {}\n", e))
                 }
             }
 
-            // ファイル読み込み
+            // Read string in the file
             "read-file" => {
                 let name = self.pop_stack().get_string();
                 match get_file_contents(name) {
                     Ok(s) => self.stack.push(Type::String(s)),
-                    Err(e) => self.log_print(format!("エラー! {}\n", e)),
+                    Err(e) => self.log_print(format!("Error! {}\n", e)),
                 };
             }
 
-            // 標準入力
+            // Standard input
             "input" => {
                 let prompt = self.pop_stack().get_string(); //プロンプト
                 self.stack.push(Type::String(input(prompt.as_str())));
             }
 
-            // 標準出力
+            // Standard output
             "print" => {
                 let a = self.pop_stack().get_string();
                 if let Mode::Debug = self.mode {
@@ -570,19 +570,19 @@ impl Executor {
                 }
             }
 
-            // 制御コマンド
+            // Commands of control
 
-            // 文字列を式として評価
+            // evaluate string as program
             "eval" => {
                 let code = self.pop_stack().get_string();
                 self.evaluate_program(code)
             }
 
-            // 条件分岐
+            // Conditional branch
             "if" => {
-                let condition = self.pop_stack().get_bool(); // 条件式
-                let code_else = self.pop_stack().get_string(); // elseコード
-                let code_if = self.pop_stack().get_string(); // ifコード
+                let condition = self.pop_stack().get_bool(); // condition
+                let code_else = self.pop_stack().get_string(); // else code
+                let code_if = self.pop_stack().get_string(); // if code
                 if condition {
                     self.evaluate_program(code_if)
                 } else {
@@ -590,7 +590,7 @@ impl Executor {
                 };
             }
 
-            // 条件が一致してる間ループ
+            // Loop while condition is true
             "while" => {
                 let cond = self.pop_stack().get_string();
                 let code = self.pop_stack().get_string();
@@ -602,34 +602,34 @@ impl Executor {
                 }
             }
 
-            // スレッドを作成
+            // Generate a thread
             "thread" => {
                 let code = self.pop_stack().get_string();
                 let mut executor = self.clone();
                 thread::spawn(move || executor.evaluate_program(code));
             }
 
-            // プロセスを終了
+            // exit a process
             "exit" => {
                 let status = self.pop_stack().get_number();
                 std::process::exit(status as i32);
             }
 
-            // リスト操作コマンド
+            // Commands of string processing
 
-            // リストの値を取得
+            // Get list value by index
             "get" => {
                 let index = self.pop_stack().get_number() as usize;
                 let list: Vec<Type> = self.pop_stack().get_list();
                 if list.len() > index {
                     self.stack.push(list[index].clone());
                 } else {
-                    self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
+                    self.log_print("Error! Index specification is out of range\n".to_string());
                     self.stack.push(Type::List(list));
                 }
             }
 
-            // リストの値を設定
+            // Set list value by index
             "set" => {
                 let value = self.pop_stack();
                 let index = self.pop_stack().get_number() as usize;
@@ -638,12 +638,12 @@ impl Executor {
                     list[index] = value;
                     self.stack.push(Type::List(list));
                 } else {
-                    self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
+                    self.log_print("Error! Index specification is out of range\n".to_string());
                     self.stack.push(Type::List(list));
                 }
             }
 
-            // リストの値を削除
+            // Delete list value by index
             "del" => {
                 let index = self.pop_stack().get_number() as usize;
                 let mut list = self.pop_stack().get_list();
@@ -651,12 +651,12 @@ impl Executor {
                     list.remove(index);
                     self.stack.push(Type::List(list));
                 } else {
-                    self.log_print("エラー! インデックス指定が範囲外です\n".to_string());
+                    self.log_print("Error! Index specification is out of range\n".to_string());
                     self.stack.push(Type::List(list));
                 }
             }
 
-            // リストに値を追加
+            // Append value in the list
             "append" => {
                 let data = self.pop_stack();
                 let mut list = self.pop_stack().get_list();
@@ -664,7 +664,7 @@ impl Executor {
                 self.stack.push(Type::List(list));
             }
 
-            // リストに挿入
+            // Insert value in the list
             "insert" => {
                 let data = self.pop_stack();
                 let index = self.pop_stack().get_number();
@@ -673,7 +673,7 @@ impl Executor {
                 self.stack.push(Type::List(list));
             }
 
-            // 並び替え
+            // Sorting in the list
             "sort" => {
                 let mut list: Vec<String> = self
                     .pop_stack()
@@ -689,14 +689,14 @@ impl Executor {
                 ));
             }
 
-            // 反転
+            // reverse in the list
             "reverse" => {
                 let mut list = self.pop_stack().get_list();
                 list.reverse();
                 self.stack.push(Type::List(list));
             }
 
-            // イテレート
+            // Iteration
             "for" => {
                 let code = self.pop_stack().get_string();
                 let vars = self.pop_stack().get_string();
@@ -711,14 +711,13 @@ impl Executor {
                 });
             }
 
-            // マッピング処理
+            // Mapping
             "map" => {
                 let code = self.pop_stack().get_string();
                 let vars = self.pop_stack().get_string();
                 let list = self.pop_stack().get_list();
 
-                let mut result_list = Vec::new(); // Create a new vector to store the results
-
+                let mut result_list = Vec::new();
                 for x in list.iter() {
                     self.memory
                         .entry(vars.clone())
@@ -726,19 +725,19 @@ impl Executor {
                         .or_insert(x.clone());
 
                     self.evaluate_program(code.clone());
-                    result_list.push(self.pop_stack()); // Store the result in the new vector
+                    result_list.push(self.pop_stack());
                 }
 
-                self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
+                self.stack.push(Type::List(result_list));
             }
 
-            // フィルタ処理
+            // Filtering
             "filter" => {
                 let code = self.pop_stack().get_string();
                 let vars = self.pop_stack().get_string();
                 let list = self.pop_stack().get_list();
 
-                let mut result_list = Vec::new(); // Create a new vector to store the results
+                let mut result_list = Vec::new();
 
                 for x in list.iter() {
                     self.memory
@@ -748,14 +747,14 @@ impl Executor {
 
                     self.evaluate_program(code.clone());
                     if self.pop_stack().get_bool() {
-                        result_list.push(x.clone()); // Store the result in the new vector
+                        result_list.push(x.clone());
                     }
                 }
 
-                self.stack.push(Type::List(result_list)); // Push the final result back onto the stack
+                self.stack.push(Type::List(result_list));
             }
 
-            // 範囲を生成
+            // Generate a range
             "range" => {
                 let step = self.pop_stack().get_number();
                 let max = self.pop_stack().get_number();
@@ -770,29 +769,29 @@ impl Executor {
                 self.stack.push(Type::List(range));
             }
 
-            // リストの長さ
+            // Get length of list
             "len" => {
                 let data = self.pop_stack().get_list();
                 self.stack.push(Type::Number(data.len() as f64));
             }
 
-            // メモリ管理コマンド
+            // Commands of memory manage
 
-            // スタックの値をポップ
+            // pop in the stack
             "pop" => {
                 self.pop_stack();
             }
 
-            // スタックのサイズを取得
+            // Get size of stack
             "size-stack" => {
                 let len: f64 = self.stack.len() as f64;
                 self.stack.push(Type::Number(len));
             }
 
-            // 変数の定義
+            // Define variable
             "var" => {
-                let name = self.pop_stack().get_string(); // 変数名
-                let data = self.pop_stack(); // 値
+                let name = self.pop_stack().get_string();
+                let data = self.pop_stack();
                 self.memory
                     .entry(name)
                     .and_modify(|value| *value = data.clone())
@@ -800,7 +799,7 @@ impl Executor {
                 self.show_variables()
             }
 
-            // データ型の取得
+            // Get data type
             "type" => {
                 let result = match self.pop_stack() {
                     Type::Number(_) => "number",
@@ -812,7 +811,7 @@ impl Executor {
                 self.stack.push(Type::String(result));
             }
 
-            // 明示的なデータ型変換
+            // Explicit data type casting
             "cast" => {
                 let types = self.pop_stack().get_string();
                 let mut value = self.pop_stack();
@@ -825,7 +824,7 @@ impl Executor {
                 }
             }
 
-            // メモリ情報を取得
+            // Get memory information
             "mem" => {
                 let mut list: Vec<Type> = Vec::new();
                 for (name, _) in self.memory.clone() {
@@ -834,21 +833,21 @@ impl Executor {
                 self.stack.push(Type::List(list))
             }
 
-            // メモリ開放
+            // Free memory
             "free" => {
                 let name = self.pop_stack().get_string();
                 self.memory.remove(name.as_str());
                 self.show_variables();
             }
 
-            // 値のコピー
+            // Copy value
             "copy" => {
                 let data = self.pop_stack();
                 self.stack.push(data.clone());
                 self.stack.push(data);
             }
 
-            // 値の交換
+            // Swap value
             "swap" => {
                 let b = self.pop_stack();
                 let a = self.pop_stack();
@@ -856,9 +855,9 @@ impl Executor {
                 self.stack.push(a);
             }
 
-            // 時間処理
+            // Commands of times
 
-            // 現在時刻を取得
+            // Get now time
             "now-time" => {
                 self.stack.push(Type::Number(
                     SystemTime::now()
@@ -868,12 +867,12 @@ impl Executor {
                 ));
             }
 
-            // 一定時間スリープ
+            // Sleep fixed time
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
-            // 外部連携処理
+            // Command of external cooperation processing
 
-            //HTTPリクエストを送る
+            // Send the http request
             "request" => {
                 let url = self.pop_stack().get_string();
                 self.stack.push(Type::String(
@@ -881,21 +880,21 @@ impl Executor {
                 ));
             }
 
-            // ファイルを開く
+            // Open the file or url
             "open" => {
                 if let Err(e) = opener::open(self.pop_stack().get_string()) {
-                    self.log_print(format!("エラー! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"))
                 }
             }
 
-            //カレントディレクトリを変更
+            // Change current directory
             "cd" => {
                 if let Err(err) = std::env::set_current_dir(self.pop_stack().get_string()) {
-                    self.log_print(format!("エラー! {}\n", err));
+                    self.log_print(format!("Error! {}\n", err));
                 }
             }
 
-            // カレントディレクトリを表示
+            // Get current directory
             "pwd" => {
                 if let Ok(current_dir) = std::env::current_dir() {
                     if let Some(path) = current_dir.to_str() {
@@ -904,36 +903,36 @@ impl Executor {
                 }
             }
 
-            // ディレクトリを作成
+            // Make directory
             "mkdir" => {
                 let name = self.pop_stack().get_string();
                 if let Err(e) = fs::create_dir(name) {
-                    self.log_print(format!("エラー! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"))
                 }
             }
 
-            // アイテムを削除
+            // remove item
             "rm" => {
                 let name = self.pop_stack().get_string();
                 if Path::new(name.as_str()).is_dir() {
                     if let Err(e) = fs::remove_dir(name) {
-                        self.log_print(format!("エラー! {e}\n"))
+                        self.log_print(format!("Error! {e}\n"))
                     }
                 } else if let Err(e) = fs::remove_file(name) {
-                    self.log_print(format!("エラー! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"))
                 }
             }
 
-            // アイテム名を変更
+            // rename item
             "rename" => {
                 let to = self.pop_stack().get_string();
                 let from = self.pop_stack().get_string();
                 if let Err(e) = fs::rename(from, to) {
-                    self.log_print(format!("エラー! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"))
                 }
             }
 
-            // ファイル一覧のリスト
+            // Get list of files
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
                     let value: Vec<Type> = entries
@@ -948,26 +947,24 @@ impl Executor {
                 }
             }
 
-            // フォルダかどうか判定
+            // Judge is it folder
             "folder" => {
                 let path = self.pop_stack().get_string();
                 let path = Path::new(path.as_str());
                 self.stack.push(Type::Bool(path.is_dir()));
             }
 
-            // コマンドとして認識されない場合は文字列とする
+            // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
     }
 
-    /// スタックの値をポップする
+    /// Pop stack value
     fn pop_stack(&mut self) -> Type {
         if let Some(value) = self.stack.pop() {
             value
         } else {
-            self.log_print(
-                "エラー! スタックの値が足りません。デフォルト値を返します\n".to_string(),
-            );
+            self.log_print("Error! スタックの値が足りません。デフォルト値を返します\n".to_string());
             Type::String("".to_string())
         }
     }
