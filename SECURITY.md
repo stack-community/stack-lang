@@ -6,7 +6,7 @@ If you discover a potential security vulnerability in the Stack Programming Lang
 
 1. **Do not create a public GitHub issue.**
 
-2. Send a private email to [kajizukataichi@outlook.jp](mailto:kajizukataichi@outlook.jp) with the subject "Security Vulnerability in Stack Programming Language."
+2. Send a private [email](mailto:kajizukataichi@outlook.jp) with the subject "Security Vulnerability in Stack Programming Language."
 
 3. Include a detailed description of the vulnerability, steps to reproduce it, and any related information.
 
