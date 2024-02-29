@@ -556,7 +556,7 @@ impl Executor {
 
             // Standard input
             "input" => {
-                let prompt = self.pop_stack().get_string(); //プロンプト
+                let prompt = self.pop_stack().get_string();
                 self.stack.push(Type::String(input(prompt.as_str())));
             }
 
