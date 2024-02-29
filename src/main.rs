@@ -964,10 +964,9 @@ impl Executor {
         if let Some(value) = self.stack.pop() {
             value
         } else {
-            self.log_print(
+            self.log_print(format!(
                 "Error! There are not enough values on the stack. returns default value\n"
-                    .to_string(),
-            );
+            ));
             Type::String("".to_string())
         }
     }
