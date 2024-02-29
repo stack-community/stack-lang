@@ -564,7 +564,7 @@ impl Executor {
             "print" => {
                 let a = self.pop_stack().get_string();
                 if let Mode::Debug = self.mode {
-                    println!("[出力]: {a}");
+                    println!("[Output]: {a}");
                 } else {
                     println!("{a}");
                 }
