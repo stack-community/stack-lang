@@ -1,44 +1,44 @@
-# Stack プログラミング言語
-スタック指向型の強力なスクリプト言語
+# Stack programming language
+Powerful stack-oriented scripting language
 
-## 特長
+## Features
 
-1. スタック指向型の効率的な実行モデル
-2. 明瞭で分かりやすいエレガントな構文
-3. 便利で拡張性の高い豊富なコマンド
-4. 強力かつ柔軟なデータ型の仕組み
+1. Stack-oriented efficient execution model
+2. Clear, easy-to-understand, and elegant syntax
+3. A wealth of convenient and highly extensible commands
+4. Powerful and flexible data type mechanism
 
-## サンプルコード
-これはStackプログラミング言語でFizzBuzz問題を解くサンプルコードです
+## Sample code
+This is a sample code to solve FizzBuzz problem in Stack programming language
 ```stack
 (
-    (i) var 
-    (Fizz) () 
-    i 3 mod 0 equal if
+     (i) var
+     (Fizz) ()
+     i 3 mod 0 equal if
 ) (fizz) var
 
 (
-    (i) var 
-    (Buzz) () 
-    i 5 mod 0 equal if
+     (i) var
+     (Buzz) ()
+     i 5 mod 0 equal if
 ) (buzz) var
 
 1 101 1 range (i) (
 
-    () (msg) var
-    msg i fizz eval concat (msg) var
-    msg i buzz eval concat (msg) var
+     () (msg) var
+     msg i fizz eval concat (msg) var
+     msg i buzz eval concat (msg) var
 
-    (
-        i (msg) var
-    ) ()
-    msg () equal if
-    msg print
+     (
+         i (msg) var
+     ) ()
+     msg () equal if
+     msg print
 ) for
-```            
+````
 
-## 貢献
-どんな貢献も大歓迎です! 気軽にプルリクエストを開いてStackプログラミング言語をより良い物にしましょう。
+## contribution
+Any contributions are welcome! Feel free to open a pull request and help make the Stack programming language even better.
 
-## ライセンス
-Stackプログラミング言語はMITライセンスに基づく自由ソフトウェアです。誰もが利用や変更などが出来ます。 詳細については[LICENSE](LICENSE) ファイルをご覧ください
+## License
+The Stack programming language is free software under the MIT license. Anyone can use and change it. See the [LICENSE](LICENSE) file for more details
