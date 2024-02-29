@@ -1,5 +1,5 @@
 # Stack programming language
-Powerful stack-oriented scripting language
+The powerful script language designed with a stack oriented approach for efficient execution. 
 
 ## Features
 
