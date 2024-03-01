@@ -570,6 +570,15 @@ impl Executor {
                 }
             }
 
+            // Get command-line arguments
+            "args-cmd" => self.stack.push(Type::List(
+                env::args()
+                    .collect::<Vec<_>>()
+                    .iter()
+                    .map(|x| Type::String(x.to_string()))
+                    .collect::<Vec<Type>>(),
+            )),
+
             // Commands of control
 
             // evaluate string as program
@@ -964,9 +973,10 @@ impl Executor {
         if let Some(value) = self.stack.pop() {
             value
         } else {
-            self.log_print(format!(
+            self.log_print(
                 "Error! There are not enough values on the stack. returns default value\n"
-            ));
+                    .to_string(),
+            );
             Type::String("".to_string())
         }
     }
