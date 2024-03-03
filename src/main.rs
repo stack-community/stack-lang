@@ -968,7 +968,7 @@ impl Executor {
         }
     }
 
-    /// Pop stack value
+    /// Pop stack's top value
     fn pop_stack(&mut self) -> Type {
         if let Some(value) = self.stack.pop() {
             value
