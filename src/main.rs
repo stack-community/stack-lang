@@ -140,7 +140,7 @@ impl Type {
         }
     }
 
-    ///　Get list form data
+    /// Get list form data
     fn get_list(&mut self) -> Vec<Type> {
         match self {
             Type::String(s) => s
