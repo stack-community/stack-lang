@@ -763,6 +763,37 @@ impl Executor {
                 self.stack.push(Type::List(result_list));
             }
 
+            "reduce" => {
+                let code = self.pop_stack().get_string();
+                let now = self.pop_stack().get_string();
+                let acc = self.pop_stack().get_string();
+                let list = self.pop_stack().get_list();
+
+                for x in list.iter() {
+                    self.memory
+                        .entry(now.clone())
+                        .and_modify(|value| *value = x.clone())
+                        .or_insert(x.clone());
+
+                    self.evaluate_program(code.clone());
+                    let result = self.pop_stack();
+
+                    self.memory
+                        .entry(acc.clone())
+                        .and_modify(|value| *value = result.clone())
+                        .or_insert(result);
+                }
+
+                let result = self.memory.get(&acc);
+                self.stack
+                    .push(result.unwrap_or(&Type::String("".to_string())).clone());
+
+                self.memory
+                    .entry(acc.clone())
+                    .and_modify(|value| *value = Type::String("".to_string()))
+                    .or_insert(Type::String("".to_string()));
+            }
+
             // Generate a range
             "range" => {
                 let step = self.pop_stack().get_number();
