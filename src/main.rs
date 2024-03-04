@@ -720,7 +720,7 @@ impl Executor {
                 });
             }
 
-            // Mapping
+            // Mapping a list
             "map" => {
                 let code = self.pop_stack().get_string();
                 let vars = self.pop_stack().get_string();
@@ -740,7 +740,7 @@ impl Executor {
                 self.stack.push(Type::List(result_list));
             }
 
-            // Filtering
+            // Filtering a list value
             "filter" => {
                 let code = self.pop_stack().get_string();
                 let vars = self.pop_stack().get_string();
@@ -763,6 +763,7 @@ impl Executor {
                 self.stack.push(Type::List(result_list));
             }
 
+            // Generate value from list
             "reduce" => {
                 let code = self.pop_stack().get_string();
                 let now = self.pop_stack().get_string();
