@@ -952,7 +952,7 @@ impl Executor {
                 }
             }
 
-            // remove item
+            // Remove item
             "rm" => {
                 let name = self.pop_stack().get_string();
                 if Path::new(name.as_str()).is_dir() {
@@ -964,7 +964,7 @@ impl Executor {
                 }
             }
 
-            // rename item
+            // Rename item
             "rename" => {
                 let to = self.pop_stack().get_string();
                 let from = self.pop_stack().get_string();
