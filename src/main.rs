@@ -829,7 +829,7 @@ impl Executor {
                 self.stack.push(Type::Number(len));
             }
 
-            // Define variable
+            // Define variable at memory
             "var" => {
                 let name = self.pop_stack().get_string();
                 let data = self.pop_stack();
@@ -840,7 +840,7 @@ impl Executor {
                 self.show_variables()
             }
 
-            // Get data type
+            // Get data type of value
             "type" => {
                 let result = match self.pop_stack() {
                     Type::Number(_) => "number",
@@ -874,21 +874,21 @@ impl Executor {
                 self.stack.push(Type::List(list))
             }
 
-            // Free memory
+            // Free up memory space of variable
             "free" => {
                 let name = self.pop_stack().get_string();
                 self.memory.remove(name.as_str());
                 self.show_variables();
             }
 
-            // Copy value
+            // Copy stack's top value
             "copy" => {
                 let data = self.pop_stack();
                 self.stack.push(data.clone());
                 self.stack.push(data);
             }
 
-            // Swap value
+            // Swap stack's top 2 value
             "swap" => {
                 let b = self.pop_stack();
                 let a = self.pop_stack();
@@ -898,7 +898,7 @@ impl Executor {
 
             // Commands of times
 
-            // Get now time
+            // Get now time as unix epoch
             "now-time" => {
                 self.stack.push(Type::Number(
                     SystemTime::now()
