@@ -583,8 +583,8 @@ impl Executor {
 
             // Play sound from frequency
             "play-sound" => {
-                fn play_sine_wave(frequency: f64, duration_secs: u64) {
-                    let sample_rate = 44100;
+                fn play_sine_wave(frequency: f64, duration_secs: f64) {
+                    let sample_rate = 44100f64;
 
                     let num_samples = (duration_secs * sample_rate) as usize;
                     let samples: Vec<f32> = (0..num_samples)
@@ -600,15 +600,15 @@ impl Executor {
                     for _ in samples {
                         sink.append(
                             rodio::source::SineWave::new(frequency as f32)
-                                .take_duration(Duration::from_secs(duration_secs)),
+                                .take_duration(Duration::from_secs_f64(duration_secs)),
                         );
                     }
 
                     sink.play();
-                    std::thread::sleep(Duration::from_secs(duration_secs));
+                    std::thread::sleep(Duration::from_secs_f64(duration_secs));
                 }
 
-                let duration_secs = self.pop_stack().get_number() as u64;
+                let duration_secs = self.pop_stack().get_number();
                 let frequency = self.pop_stack().get_number();
 
                 play_sine_wave(frequency, duration_secs);
