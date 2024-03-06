@@ -40,7 +40,7 @@ fn main() {
         }
     } else {
         // Show a title
-        println!("Stack programming language");
+        println!("Stack Programming Language");
         let mut executor = Executor::new(Mode::Debug);
         // REPL Execution
         loop {
