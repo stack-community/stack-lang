@@ -1,5 +1,7 @@
 use rand::seq::SliceRandom;
 use regex::Regex;
+use rodio::Source;
+use rodio::{OutputStream, Sink};
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
@@ -578,6 +580,39 @@ impl Executor {
                     .map(|x| Type::String(x.to_string()))
                     .collect::<Vec<Type>>(),
             )),
+
+            // Play sound from frequency
+            "play-sound" => {
+                fn play_sine_wave(frequency: f64, duration_secs: u64) {
+                    let sample_rate = 44100;
+
+                    let num_samples = (duration_secs * sample_rate) as usize;
+                    let samples: Vec<f32> = (0..num_samples)
+                        .map(|t| {
+                            let t = t as f64 / sample_rate as f64;
+                            (t * frequency * 2.0 * std::f64::consts::PI).sin() as f32
+                        })
+                        .collect();
+
+                    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+                    let sink = Sink::try_new(&stream_handle).unwrap();
+
+                    for _ in samples {
+                        sink.append(
+                            rodio::source::SineWave::new(frequency as f32)
+                                .take_duration(Duration::from_secs(duration_secs)),
+                        );
+                    }
+
+                    sink.play();
+                    std::thread::sleep(Duration::from_secs(duration_secs));
+                }
+
+                let duration_secs = self.pop_stack().get_number() as u64;
+                let frequency = self.pop_stack().get_number();
+
+                play_sine_wave(frequency, duration_secs);
+            }
 
             // Commands of control
 
