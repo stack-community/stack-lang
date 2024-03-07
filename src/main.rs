@@ -1,14 +1,12 @@
 use rand::seq::SliceRandom;
 use regex::Regex;
-use rodio::Source;
-use rodio::{OutputStream, Sink};
+use rodio::{OutputStream, Sink, Source};
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
 use std::path::Path;
-use std::thread;
-use std::thread::sleep;
+use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 fn main() {
@@ -471,7 +469,7 @@ impl Executor {
                 }
             }
 
-            // Concat the string
+            // Concatenate the string
             "concat" => {
                 let b = self.pop_stack().get_string();
                 let a = self.pop_stack().get_string();
@@ -589,7 +587,7 @@ impl Executor {
                     let num_samples = (duration_secs * sample_rate) as usize;
                     let samples: Vec<f32> = (0..num_samples)
                         .map(|t| {
-                            let t = t as f64 / sample_rate as f64;
+                            let t = t as f64 / sample_rate;
                             (t * frequency * 2.0 * std::f64::consts::PI).sin() as f32
                         })
                         .collect();
@@ -659,7 +657,7 @@ impl Executor {
                 std::process::exit(status as i32);
             }
 
-            // Commands of string processing
+            // Commands of list processing
 
             // Get list value by index
             "get" => {
