@@ -1,44 +1,29 @@
-# Stack programming language
+# Stack Programming Language
 The powerful script language designed with a stack oriented approach for efficient execution. 
 
-## Features
+## Installation
 
- 1. Efficient stack-oriented execution model
- 2. Clear, easy-to-understand and elegant syntax
- 3. Rich of convenient and highly extensible commands
- 4. Dynamic and flexible data types system
+You can install Stack Programming Language using `cargo`, the Rust package manager. Make sure you have Rust installed on your system before proceeding.
 
-## Sample code
-This is a sample code to solve FizzBuzz problem in Stack programming language
-```stack
-(
-     (i) var
-     (Fizz) ()
-     i 3 mod 0 equal if
-) (fizz) var
+```bash
+$ git clone https://github.com/Stack-Programing-Community/Stack-Programing-Language.git
+$ cd Stack-Programing-Language
+$ cargo build --release
+$ cargo install --path .
+```
 
-(
-     (i) var
-     (Buzz) ()
-     i 5 mod 0 equal if
-) (buzz) var
+This will install the `stack` command, which you can use to run Stack Programming Language programs.
 
-1 101 1 range (i) (
+## Usage
 
-     () (msg) var
-     msg i fizz eval concat (msg) var
-     msg i buzz eval concat (msg) var
+To run a Stack Programming Language program, use the `stack` command followed by the path to your program file.
 
-     (
-         i (msg) var
-     ) ()
-     msg () equal if
-     msg print
-) for
-````
+```bash
+$ stack path/to/your/program.stk
+```
 
-## contribution
-Any contributions are welcome! Feel free to open a pull request and help make the Stack programming language even better.
+For more detailed usage instructions and language specifications, please refer to the official documentation.
 
 ## License
-The Stack programming language is free software under the MIT license. Anyone can use and change it. See the [LICENSE](LICENSE) file for more details
+
+Stack Programming Language is distributed under the MIT license. See the [LICENSE](LICENSE) file for details.
