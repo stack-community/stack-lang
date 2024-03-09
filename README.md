@@ -1,12 +1,16 @@
 # Stack Programming Language
 The powerful script language designed with a stack oriented approach for efficient execution. 
 
+![image](https://github.com/Stack-Programing-Community/Stack-Programing-Language/assets/122075081/5d7ff479-731b-4def-808a-12dc5301a7a1)
+
 ## Installation
 
 Stack programming language's interpreter binary files for Windows are in the [release](https://github.com/Stack-Programing-Community/Stack-Programing-Language/releases).
-And the releases are Regularly when new function become stable, that's good way if you prize safety.
 
-clone the Stack Programming Language repository using `git` and build it using `cargo`, the Rust package manager.
+the releases are Regularly when new function become stable, that's good way if you prize safety.
+
+
+If you using other environment, you can clone the Stack Programming Language repository using `git` and build it using `cargo`, the Rust package manager.
 Make sure you have Rust and Git installed on your system before proceeding.
 
 ```bash
@@ -16,18 +20,4 @@ $ cargo build --release
 $ cargo install --path .
 ```
 
-This will install the `stack` command, which you can use to run Stack Programming Language programs.
-
-## Usage
-
-To run a Stack Programming Language program, use the `stack` command followed by the path to your program file.
-
-```bash
-$ stack path/to/your/program.stk 
-```
-
-For more detailed usage instructions and language specifications, please refer to the official documentation.
-
-## License
-
-Stack Programming Language is distributed under the MIT license. See the [LICENSE](LICENSE) file for details.
+This will install the `stack` command, which you can use to run Stack programs.
