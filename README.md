@@ -3,7 +3,11 @@ The powerful script language designed with a stack oriented approach for efficie
 
 ## Installation
 
-You can install Stack Programming Language using `cargo`, the Rust package manager. Make sure you have Rust installed on your system before proceeding.
+Stack programming language's interpreter binary files for Windows are in the [release](https://github.com/Stack-Programing-Community/Stack-Programing-Language/releases).
+And the releases are Regularly when new function become stable, that's good way if you prize safety.
+
+clone the Stack Programming Language repository using `git` and build it using `cargo`, the Rust package manager.
+Make sure you have Rust and Git installed on your system before proceeding.
 
 ```bash
 $ git clone https://github.com/Stack-Programing-Community/Stack-Programing-Language.git
@@ -19,7 +23,7 @@ This will install the `stack` command, which you can use to run Stack Programmin
 To run a Stack Programming Language program, use the `stack` command followed by the path to your program file.
 
 ```bash
-$ stack path/to/your/program.stk
+$ stack path/to/your/program.stk 
 ```
 
 For more detailed usage instructions and language specifications, please refer to the official documentation.
