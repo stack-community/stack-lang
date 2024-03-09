@@ -3,10 +3,10 @@ The powerful script language designed with a stack oriented approach for efficie
 
 ## Features
 
-1. Stack-oriented efficient execution model
-2. Clear, easy-to-understand, and elegant syntax
-3. A wealth of convenient and highly extensible commands
-4. Powerful and flexible data type mechanism
+ 1. Efficient stack-oriented execution model
+ 2. Clear, easy-to-understand and elegant syntax
+ 3. Rich of convenient and highly extensible commands
+ 4. Dynamic and flexible data types system
 
 ## Sample code
 This is a sample code to solve FizzBuzz problem in Stack programming language
