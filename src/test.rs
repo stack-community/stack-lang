@@ -46,7 +46,28 @@ fn calculate() {
 }
 
 #[test]
-fn control() {
+fn variables() {
+    let mut executor = Executor::new(Mode::Script);
+
+    assert_eq!(
+        {
+            executor.evaluate_program("5987 (x) var x".to_string());
+            executor.pop_stack().get_number()
+        },
+        5987f64
+    );
+
+    assert_eq!(
+        {
+            executor.evaluate_program("5987 (x) var x 1 add (x) var x".to_string());
+            executor.pop_stack().get_number()
+        },
+        5988f64
+    );
+}
+
+#[test]
+fn control_if() {
     let mut executor = Executor::new(Mode::Script);
 
     assert_eq!(
@@ -64,6 +85,11 @@ fn control() {
         },
         false
     );
+}
+
+#[test]
+fn control_while() {
+    let mut executor = Executor::new(Mode::Script);
 
     assert_eq!(
         {
