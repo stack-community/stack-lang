@@ -9,6 +9,9 @@ use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+#[cfg(test)]
+mod test;
+
 fn main() {
     // Reading command line arguments
     let args = env::args().collect::<Vec<_>>();
