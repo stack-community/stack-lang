@@ -93,7 +93,8 @@ fn control_while() {
 
     assert_eq!(
         {
-            executor.evaluate_program("5 (i) var (i 1 add (i) var) (i 10 less) while i".to_string());
+            executor
+                .evaluate_program("5 (i) var (i 1 add (i) var) (i 10 less) while i".to_string());
             executor.pop_stack().get_number()
         },
         10f64
