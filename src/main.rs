@@ -919,6 +919,14 @@ impl Executor {
                 }
             }
 
+            // Is string include only number
+            "only-number" => {
+                match self.pop_stack().get_string().trim().parse::<f64>() {
+                    Ok(_) => self.stack.push(Type::Bool(true)),
+                    Err(_) => self.stack.push(Type::Bool(false))
+                }
+            }
+
             // Get memory information
             "mem" => {
                 let mut list: Vec<Type> = Vec::new();
