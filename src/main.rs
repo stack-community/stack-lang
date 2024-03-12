@@ -90,6 +90,7 @@ enum Type {
     String(String),
     Bool(bool),
     List(Vec<Type>),
+    Error(String),
 }
 
 /// Implement methods
@@ -104,6 +105,7 @@ impl Type {
                 let syntax: Vec<String> = list.iter().map(|token| token.display()).collect();
                 format!("[{}]", syntax.join(" "))
             }
+            Type::Error(err) => format!("error:{err}"),
         }
     }
 
@@ -114,6 +116,7 @@ impl Type {
             Type::Number(i) => i.to_string(),
             Type::Bool(b) => b.to_string(),
             Type::List(l) => Type::List(l.to_owned()).display(),
+            Type::Error(err) => format!("error:{err}"),
         }
     }
 
@@ -130,6 +133,7 @@ impl Type {
                 }
             }
             Type::List(l) => l.len() as f64,
+            Type::Error(_) => 0f64,
         }
     }
 
@@ -140,6 +144,7 @@ impl Type {
             Type::Number(i) => *i != 0.0,
             Type::Bool(b) => *b,
             Type::List(l) => !l.is_empty(),
+            Type::Error(_) => false,
         }
     }
 
@@ -154,6 +159,7 @@ impl Type {
             Type::Number(i) => vec![Type::Number(*i)],
             Type::Bool(b) => vec![Type::Bool(*b)],
             Type::List(l) => l.to_vec(),
+            Type::Error(e) => vec![Type::Error(e.to_string())],
         }
     }
 }
@@ -456,7 +462,7 @@ impl Executor {
                     Some(c) => self.stack.push(Type::String(c.to_string())),
                     None => {
                         self.log_print("Error! failed of number decoding\n".to_string());
-                        self.stack.push(Type::Number(code));
+                        self.stack.push(Type::Error("number-decoding".to_string()));
                     }
                 }
             }
@@ -468,7 +474,7 @@ impl Executor {
                     self.stack.push(Type::Number((first_char as u32) as f64));
                 } else {
                     self.log_print("Error! failed of string encoding\n".to_string());
-                    self.stack.push(Type::String(string))
+                    self.stack.push(Type::Error("string-encoding".to_string()));
                 }
             }
 
@@ -523,7 +529,8 @@ impl Executor {
                 let pattern: Regex = match Regex::new(pattern.as_str()) {
                     Ok(i) => i,
                     Err(e) => {
-                        self.log_print(format!("Error! {e}\n"));
+                        self.log_print(format!("Error! {}\n", e.to_string().replace("Error", "")));
+                        self.stack.push(Type::Error("regex".to_string()));
                         return;
                     }
                 };
@@ -541,10 +548,17 @@ impl Executor {
 
             // Write string in the file
             "write-file" => {
-                let mut file =
-                    File::create(self.pop_stack().get_string()).expect("Failed to create file");
+                let mut file = match File::create(self.pop_stack().get_string()) {
+                    Ok(file) => file,
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("create-file".to_string()));
+                        return;
+                    }
+                };
                 if let Err(e) = file.write_all(self.pop_stack().get_string().as_bytes()) {
-                    self.log_print(format!("Error! {}\n", e))
+                    self.log_print(format!("Error! {}\n", e));
+                    self.stack.push(Type::Error("write-file".to_string()));
                 }
             }
 
@@ -553,7 +567,10 @@ impl Executor {
                 let name = self.pop_stack().get_string();
                 match get_file_contents(name) {
                     Ok(s) => self.stack.push(Type::String(s)),
-                    Err(e) => self.log_print(format!("Error! {}\n", e)),
+                    Err(e) => {
+                        self.log_print(format!("Error! {}\n", e));
+                        self.stack.push(Type::Error("read-file".to_string()));
+                    }
                 };
             }
 
@@ -670,7 +687,7 @@ impl Executor {
                     self.stack.push(list[index].clone());
                 } else {
                     self.log_print("Error! Index specification is out of range\n".to_string());
-                    self.stack.push(Type::List(list));
+                    self.stack.push(Type::Error("index-out-range".to_string()));
                 }
             }
 
@@ -684,7 +701,7 @@ impl Executor {
                     self.stack.push(Type::List(list));
                 } else {
                     self.log_print("Error! Index specification is out of range\n".to_string());
-                    self.stack.push(Type::List(list));
+                    self.stack.push(Type::Error("index-out-range".to_string()));
                 }
             }
 
@@ -697,7 +714,7 @@ impl Executor {
                     self.stack.push(Type::List(list));
                 } else {
                     self.log_print("Error! Index specification is out of range\n".to_string());
-                    self.stack.push(Type::List(list));
+                    self.stack.push(Type::Error("index-out-range".to_string()));
                 }
             }
 
@@ -883,6 +900,7 @@ impl Executor {
                     Type::String(_) => "string",
                     Type::Bool(_) => "bool",
                     Type::List(_) => "list",
+                    Type::Error(_) => "error",
                 }
                 .to_string();
                 self.stack.push(Type::String(result));
@@ -960,7 +978,8 @@ impl Executor {
             // Open the file or url
             "open" => {
                 if let Err(e) = opener::open(self.pop_stack().get_string()) {
-                    self.log_print(format!("Error! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("open".to_string()));
                 }
             }
 
@@ -968,6 +987,7 @@ impl Executor {
             "cd" => {
                 if let Err(err) = std::env::set_current_dir(self.pop_stack().get_string()) {
                     self.log_print(format!("Error! {}\n", err));
+                    self.stack.push(Type::Error("cd".to_string()));
                 }
             }
 
@@ -984,7 +1004,8 @@ impl Executor {
             "mkdir" => {
                 let name = self.pop_stack().get_string();
                 if let Err(e) = fs::create_dir(name) {
-                    self.log_print(format!("Error! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("mkdir".to_string()));
                 }
             }
 
@@ -993,10 +1014,12 @@ impl Executor {
                 let name = self.pop_stack().get_string();
                 if Path::new(name.as_str()).is_dir() {
                     if let Err(e) = fs::remove_dir(name) {
-                        self.log_print(format!("Error! {e}\n"))
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("rm".to_string()));
                     }
                 } else if let Err(e) = fs::remove_file(name) {
-                    self.log_print(format!("Error! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("rm".to_string()));
                 }
             }
 
@@ -1005,7 +1028,8 @@ impl Executor {
                 let to = self.pop_stack().get_string();
                 let from = self.pop_stack().get_string();
                 if let Err(e) = fs::rename(from, to) {
-                    self.log_print(format!("Error! {e}\n"))
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("rename".to_string()));
                 }
             }
 
