@@ -526,6 +526,8 @@ impl Executor {
             // Search by regular expression
             "regex" => {
                 let pattern = self.pop_stack().get_string();
+                let text = self.pop_stack().get_string();
+
                 let pattern: Regex = match Regex::new(pattern.as_str()) {
                     Ok(i) => i,
                     Err(e) => {
@@ -534,8 +536,6 @@ impl Executor {
                         return;
                     }
                 };
-
-                let text = self.pop_stack().get_string();
 
                 let mut list: Vec<Type> = Vec::new();
                 for i in pattern.captures_iter(text.as_str()) {
