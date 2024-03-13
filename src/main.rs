@@ -823,6 +823,11 @@ impl Executor {
                 let acc = self.pop_stack().get_string();
                 let list = self.pop_stack().get_list();
 
+                self.memory
+                    .entry(acc.clone())
+                    .and_modify(|value| *value = Type::String("".to_string()))
+                    .or_insert(Type::String("".to_string()));
+
                 for x in list.iter() {
                     self.memory
                         .entry(now.clone())
@@ -983,17 +988,23 @@ impl Executor {
 
             // Open the file or url
             "open" => {
-                if let Err(e) = opener::open(self.pop_stack().get_string()) {
+                let name = self.pop_stack().get_string();
+                if let Err(e) = opener::open(name.clone()) {
                     self.log_print(format!("Error! {e}\n"));
                     self.stack.push(Type::Error("open".to_string()));
+                } else {
+                    self.stack.push(Type::String(name))
                 }
             }
 
             // Change current directory
             "cd" => {
-                if let Err(err) = std::env::set_current_dir(self.pop_stack().get_string()) {
+                let name = self.pop_stack().get_string();
+                if let Err(err) = std::env::set_current_dir(name.clone()) {
                     self.log_print(format!("Error! {}\n", err));
                     self.stack.push(Type::Error("cd".to_string()));
+                } else {
+                    self.stack.push(Type::String(name))
                 }
             }
 
@@ -1009,9 +1020,11 @@ impl Executor {
             // Make directory
             "mkdir" => {
                 let name = self.pop_stack().get_string();
-                if let Err(e) = fs::create_dir(name) {
+                if let Err(e) = fs::create_dir(name.clone()) {
                     self.log_print(format!("Error! {e}\n"));
                     self.stack.push(Type::Error("mkdir".to_string()));
+                } else {
+                    self.stack.push(Type::String(name))
                 }
             }
 
@@ -1019,13 +1032,17 @@ impl Executor {
             "rm" => {
                 let name = self.pop_stack().get_string();
                 if Path::new(name.as_str()).is_dir() {
-                    if let Err(e) = fs::remove_dir(name) {
+                    if let Err(e) = fs::remove_dir(name.clone()) {
                         self.log_print(format!("Error! {e}\n"));
                         self.stack.push(Type::Error("rm".to_string()));
+                    } else {
+                        self.stack.push(Type::String(name))
                     }
-                } else if let Err(e) = fs::remove_file(name) {
+                } else if let Err(e) = fs::remove_file(name.clone()) {
                     self.log_print(format!("Error! {e}\n"));
                     self.stack.push(Type::Error("rm".to_string()));
+                } else {
+                    self.stack.push(Type::String(name))
                 }
             }
 
@@ -1033,9 +1050,11 @@ impl Executor {
             "rename" => {
                 let to = self.pop_stack().get_string();
                 let from = self.pop_stack().get_string();
-                if let Err(e) = fs::rename(from, to) {
+                if let Err(e) = fs::rename(from, to.clone()) {
                     self.log_print(format!("Error! {e}\n"));
                     self.stack.push(Type::Error("rename".to_string()));
+                } else {
+                    self.stack.push(Type::String(to))
                 }
             }
 
