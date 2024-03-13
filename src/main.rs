@@ -133,7 +133,7 @@ impl Type {
                 }
             }
             Type::List(l) => l.len() as f64,
-            Type::Error(_) => 0f64,
+            Type::Error(e) => e.parse().unwrap_or(0f64),
         }
     }
 
@@ -144,7 +144,7 @@ impl Type {
             Type::Number(i) => *i != 0.0,
             Type::Bool(b) => *b,
             Type::List(l) => !l.is_empty(),
-            Type::Error(_) => false,
+            Type::Error(e) => e.parse().unwrap_or(false),
         }
     }
 
