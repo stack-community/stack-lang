@@ -285,17 +285,17 @@ impl Executor {
 
             // Judge what the token is
             if let Ok(i) = token.parse::<f64>() {
-                // Push number on stack
+                // Push number value on the stack
                 self.stack.push(Type::Number(i));
             } else if token == "true" || token == "false" {
-                // Push bool on stack
+                // Push bool value on the stack
                 self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
             } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
-                // Push string on stack
+                // Push string value on the stack
                 self.stack
                     .push(Type::String(token[1..token.len() - 1].to_string()));
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
-                // Push list on stack
+                // Push list value on the stack
                 let old_len = self.stack.len(); // length of old stack
                 let slice = &token[1..token.len() - 1];
                 self.evaluate_program(slice.to_string());
@@ -306,10 +306,13 @@ impl Executor {
                 }
                 list.reverse(); // reverse list
                 self.stack.push(Type::List(list));
+            } else if token.starts_with("error:") {
+                // Push error value on the stack
+                self.stack.push(Type::Error(token.replace("error:", "")))
             } else if let Some(i) = self.memory.get(&token) {
                 // Push variable's data on stack
                 self.stack.push(i.clone());
-            } else if token.contains('#') {
+            } else if chars[0] == '#' && chars[chars.len() - 1] == '#' {
                 // Processing comments
                 self.log_print(format!("* Comment \"{}\"\n", token.replace('#', "")));
             } else {
@@ -920,6 +923,7 @@ impl Executor {
                     "string" => self.stack.push(Type::String(value.get_string())),
                     "bool" => self.stack.push(Type::Bool(value.get_bool())),
                     "list" => self.stack.push(Type::List(value.get_list())),
+                    "error" => self.stack.push(Type::Error(value.get_string())),
                     _ => self.stack.push(value),
                 }
             }
