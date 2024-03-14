@@ -507,6 +507,18 @@ impl Executor {
                 ));
             }
 
+            // Change string style case
+            "case" => {
+                let types = self.pop_stack().get_string();
+                let text = self.pop_stack().get_string();
+
+                self.stack.push(Type::String(match types.as_str() {
+                    "lower" => text.to_lowercase(),
+                    "upper" => text.to_uppercase(),
+                    _ => text,
+                }));
+            }
+
             // Generate a string by concat list
             "join" => {
                 let key = self.pop_stack().get_string();
