@@ -14,10 +14,10 @@ If you using other environment, you can clone the Stack Programming Language rep
 Make sure you have Rust and Git installed on your system before proceeding.
 
 ```bash
-$ git clone https://github.com/Stack-Programing-Community/Stack-Programing-Language.git
-$ cd Stack-Programing-Language
-$ cargo build --release
-$ cargo install --path .
+git clone https://github.com/Stack-Programing-Community/Stack-Programing-Language.git
+cd Stack-Programing-Language
+cargo build --release
+cargo install --path .
 ```
 
 This will install the `stack` command, which you can use to run Stack programs.
