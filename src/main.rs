@@ -205,15 +205,15 @@ impl Executor {
     }
 
     /// Show inside the stack
-    fn show_stack(&mut self) {
-        self.log_print(format!(
+    fn show_stack(&mut self) -> String {
+        format!(
             "Stack〔 {} 〕",
             self.stack
                 .iter()
                 .map(|x| x.display())
                 .collect::<Vec<_>>()
                 .join(" | ")
-        ))
+        )
     }
 
     /// Parse token by analyzing syntax
@@ -277,8 +277,9 @@ impl Executor {
         let syntax: Vec<String> = self.analyze_syntax(code);
 
         for token in syntax {
-            self.show_stack(); // Show inside stack to debug
-            self.log_print(format!(" ←  {}\n", token));
+            // Show inside stack to debug
+            let stack = self.show_stack(); 
+            self.log_print(format!("{stack} ←  {token}\n"));
 
             // Character vector for token processing
             let chars: Vec<char> = token.chars().collect();
@@ -322,8 +323,8 @@ impl Executor {
         }
 
         // Show inside stack, after execution
-        self.show_stack();
-        self.log_print("\n".to_string());
+        let stack = self.show_stack();
+        self.log_print(format!("{stack}\n"));
     }
 
     /// execute string as commands
