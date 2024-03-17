@@ -1090,6 +1090,14 @@ impl Executor {
                 }
             }
 
+            "size-file" => match fs::metadata(self.pop_stack().get_string()) {
+                Ok(i) => self.stack.push(Type::Number(i.len() as f64)),
+                Err(e) => {
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("size-file".to_string()))
+                }
+            },
+
             // Get list of files
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
