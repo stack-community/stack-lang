@@ -8,7 +8,7 @@ use std::io::{self, Error, Read, Write};
 use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use sys_info::{cpu_num, cpu_speed, os_release};
+use sys_info::{cpu_num, cpu_speed, os_release, os_type};
 
 #[cfg(test)]
 mod test;
@@ -1126,6 +1126,7 @@ impl Executor {
                 let types = self.pop_stack().get_string();
                 self.stack.push(match types.as_str() {
                     "os-release" => Type::String(os_release().unwrap_or("".to_string())),
+                    "os-type" => Type::String(os_type().unwrap_or("".to_string())),
                     "cpu-num" => Type::Number(cpu_num().unwrap_or(0) as f64),
                     "cpu-speed" => Type::Number(cpu_speed().unwrap_or(0) as f64),
                     _ => Type::Error("sys-info".to_string()),
