@@ -1090,6 +1090,7 @@ impl Executor {
                 }
             }
 
+            // Get size of the file
             "size-file" => match fs::metadata(self.pop_stack().get_string()) {
                 Ok(i) => self.stack.push(Type::Number(i.len() as f64)),
                 Err(e) => {
