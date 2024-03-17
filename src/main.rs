@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
+use sys_info::{cpu_num, cpu_speed, os_release};
 use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -1095,6 +1096,17 @@ impl Executor {
                 let path = self.pop_stack().get_string();
                 let path = Path::new(path.as_str());
                 self.stack.push(Type::Bool(path.is_dir()));
+            }
+
+            // Get system information
+            "sys-info" => {
+                let types = self.pop_stack().get_string();
+                self.stack.push(match types.as_str() {
+                    "os-release" => Type::String(os_release().unwrap_or("".to_string())),
+                    "cpu-num" => Type::Number(cpu_num().unwrap_or(0) as f64),
+                    "cpu-speed" => Type::Number(cpu_speed().unwrap_or(0) as f64),
+                    _ => Type::Error("sys-info".to_string())
+                })
             }
 
             // If it is not recognized as a command, use it as a string.
