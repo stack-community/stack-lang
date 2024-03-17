@@ -5,10 +5,10 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
-use sys_info::{cpu_num, cpu_speed, os_release};
 use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use sys_info::{cpu_num, cpu_speed, os_release};
 
 #[cfg(test)]
 mod test;
@@ -279,7 +279,7 @@ impl Executor {
 
         for token in syntax {
             // Show inside stack to debug
-            let stack = self.show_stack(); 
+            let stack = self.show_stack();
             self.log_print(format!("{stack} ←  {token}\n"));
 
             // Character vector for token processing
@@ -1076,6 +1076,20 @@ impl Executor {
                 }
             }
 
+            // Copy the item
+            "cp" => {
+                let to = self.pop_stack().get_string();
+                let from = self.pop_stack().get_string();
+
+                match fs::copy(from, to) {
+                    Ok(i) => self.stack.push(Type::Number(i as f64)),
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("cp".to_string()))
+                    }
+                }
+            }
+
             // Get list of files
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
@@ -1105,7 +1119,7 @@ impl Executor {
                     "os-release" => Type::String(os_release().unwrap_or("".to_string())),
                     "cpu-num" => Type::Number(cpu_num().unwrap_or(0) as f64),
                     "cpu-speed" => Type::Number(cpu_speed().unwrap_or(0) as f64),
-                    _ => Type::Error("sys-info".to_string())
+                    _ => Type::Error("sys-info".to_string()),
                 })
             }
 
