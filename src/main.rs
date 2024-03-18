@@ -91,6 +91,7 @@ enum Type {
     String(String),
     Bool(bool),
     List(Vec<Type>),
+    Object(String, HashMap<String, Type>),
     Error(String),
 }
 
@@ -103,10 +104,13 @@ impl Type {
             Type::String(s) => format!("({})", s),
             Type::Bool(b) => b.to_string(),
             Type::List(list) => {
-                let syntax: Vec<String> = list.iter().map(|token| token.display()).collect();
-                format!("[{}]", syntax.join(" "))
+                let result: Vec<String> = list.iter().map(|token| token.display()).collect();
+                format!("[{}]", result.join(" "))
             }
             Type::Error(err) => format!("error:{err}"),
+            Type::Object(name, _) => {
+                format!("Object<{name}>")
+            }
         }
     }
 
@@ -118,6 +122,9 @@ impl Type {
             Type::Bool(b) => b.to_string(),
             Type::List(l) => Type::List(l.to_owned()).display(),
             Type::Error(err) => format!("error:{err}"),
+            Type::Object(name, _) => {
+                format!("Object<{name}>")
+            }
         }
     }
 
@@ -135,6 +142,7 @@ impl Type {
             }
             Type::List(l) => l.len() as f64,
             Type::Error(e) => e.parse().unwrap_or(0f64),
+            Type::Object(_, object) => object.len() as f64,
         }
     }
 
@@ -146,6 +154,7 @@ impl Type {
             Type::Bool(b) => *b,
             Type::List(l) => !l.is_empty(),
             Type::Error(e) => e.parse().unwrap_or(false),
+            Type::Object(_, object) => object.is_empty(),
         }
     }
 
@@ -161,6 +170,7 @@ impl Type {
             Type::Bool(b) => vec![Type::Bool(*b)],
             Type::List(l) => l.to_vec(),
             Type::Error(e) => vec![Type::Error(e.to_string())],
+            Type::Object(_, object) => object.values().map(|x| x.to_owned()).collect::<Vec<Type>>(),
         }
     }
 }
@@ -918,13 +928,14 @@ impl Executor {
             // Get data type of value
             "type" => {
                 let result = match self.pop_stack() {
-                    Type::Number(_) => "number",
-                    Type::String(_) => "string",
-                    Type::Bool(_) => "bool",
-                    Type::List(_) => "list",
-                    Type::Error(_) => "error",
-                }
-                .to_string();
+                    Type::Number(_) => "number".to_string(),
+                    Type::String(_) => "string".to_string(),
+                    Type::Bool(_) => "bool".to_string(),
+                    Type::List(_) => "list".to_string(),
+                    Type::Error(_) => "error".to_string(),
+                    Type::Object(name, _) => name.to_string(),
+                };
+
                 self.stack.push(Type::String(result));
             }
 
@@ -994,7 +1005,46 @@ impl Executor {
             // Sleep fixed time
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
-            // Command of external cooperation processing
+            // Commands of object oriented system
+
+            // Generate a instance of object
+            "instance" => {
+                let data = self.pop_stack().get_list();
+                let mut class = self.pop_stack().get_list();
+                let mut object: HashMap<String, Type> = HashMap::new();
+                let name = class[0].get_string();
+
+                for (name, element) in &mut class.to_owned()[1..class.len()].iter().zip(data) {
+                    object.insert(name.to_owned().get_string(), element);
+                }
+
+                self.stack.push(Type::Object(name, object))
+            }
+
+            // Get property of object
+            "property" => {
+                let name = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(_, data) => self.stack.push(
+                        data.get(name.as_str())
+                            .unwrap_or(&Type::Error("property".to_string()))
+                            .clone(),
+                    ),
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Get all of properties
+            "all" => match self.pop_stack() {
+                Type::Object(_, data) => self.stack.push(Type::List(
+                    data.keys()
+                        .map(|x| Type::String(x.to_owned()))
+                        .collect::<Vec<Type>>(),
+                )),
+                _ => self.stack.push(Type::Error("not-object".to_string())),
+            },
+
+            // Commands of external cooperation processing
 
             // Send the http request
             "request" => {
