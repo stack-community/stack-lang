@@ -1134,6 +1134,10 @@ impl Executor {
                         Ok(info) => Type::Number(info.total as f64),
                         Err(_) => Type::Error("sys-info".to_string()),
                     },
+                    "mem-used" => match mem_info() {
+                        Ok(info) => Type::Number((info.total - info.free) as f64),
+                        Err(_) => Type::Error("sys-info".to_string()),
+                    },
                     _ => Type::Error("sys-info".to_string()),
                 })
             }
