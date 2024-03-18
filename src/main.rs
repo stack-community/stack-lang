@@ -1013,7 +1013,14 @@ impl Executor {
                 let mut methods = self.pop_stack().get_list();
                 let mut class = self.pop_stack().get_list();
                 let mut object: HashMap<String, Type> = HashMap::new();
-                let name = class[0].get_string();
+
+                let name = if !class.is_empty() {
+                    class[0].get_string()
+                } else {
+                    self.log_print("Error! the type name is not found.".to_string());
+                    self.stack.push(Type::Error("instance-name".to_string()));
+                    return;
+                };
 
                 for (name, element) in &mut class.to_owned()[1..class.len()].iter().zip(data) {
                     object.insert(name.to_owned().get_string(), element);
@@ -1021,7 +1028,13 @@ impl Executor {
 
                 for item in &mut methods {
                     let item = item.get_list();
-                    object.insert(item[0].clone().get_string(), item[1].clone());
+                    if item.len() >= 2 {
+                        object.insert(item[0].clone().get_string(), item[1].clone());
+                    } else {
+                        self.log_print("Error! the default data structure is wrong.".to_string());
+                        self.stack.push(Type::Error("instance-default".to_string()));
+                        return;
+                    }
                 }
 
                 self.stack.push(Type::Object(name, object))
@@ -1072,8 +1085,8 @@ impl Executor {
                             .entry(property)
                             .and_modify(|value| *value = data.clone())
                             .or_insert(data.clone());
-                    
-                            self.stack.push(Type::Object(name, value))
+
+                        self.stack.push(Type::Object(name, value))
                     }
                     _ => self.stack.push(Type::Error("not-object".to_string())),
                 }
