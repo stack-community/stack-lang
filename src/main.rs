@@ -1,3 +1,4 @@
+use clap::{App, Arg};
 use rand::seq::SliceRandom;
 use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
@@ -14,31 +15,40 @@ use sys_info::{cpu_num, cpu_speed, hostname, mem_info, os_release, os_type};
 mod test;
 
 fn main() {
-    // Reading command line arguments
-    let args = env::args().collect::<Vec<_>>();
-    if args.len() > 2 {
-        // Open the script file
-        match get_file_contents(args[1].clone()) {
-            Ok(code) => {
-                // Judge execution mode
-                if args[2].contains("-d") {
-                    let mut executor = Executor::new(Mode::Debug);
-                    executor.evaluate_program(code); // Debug execution
-                } else {
-                    let mut executor = Executor::new(Mode::Script);
-                    executor.evaluate_program(code); // Script execution
+    let matches = App::new("Stack")
+        .version("1.11")
+        .author("Stack Programming Community")
+        .about("The powerful script language designed with a stack oriented approach for efficient execution. ")
+        .arg(Arg::new("script")
+            .index(1)
+            .value_name("FILE")
+            .help("Sets the script file to execution")
+            .takes_value(true))
+        .arg(Arg::new("debug")
+            .short('d')
+            .long("debug")
+            .help("Enables debug mode"))
+        .get_matches();
+
+    if let Some(script) = matches.value_of("script") {
+        if matches.is_present("debug") {
+            let mut stack = Executor::new(Mode::Debug);
+            stack.evaluate_program(match get_file_contents(script.to_string()) {
+                Ok(code) => code,
+                Err(err) => {
+                    println!("Error! {err}");
+                    return;
                 }
-            }
-            Err(e) => println!("Error! {e}"),
-        }
-    } else if args.len() > 1 {
-        // Open the script file
-        match get_file_contents(args[1].clone()) {
-            Ok(code) => {
-                let mut executor = Executor::new(Mode::Script);
-                executor.evaluate_program(code); // Default is script execution
-            }
-            Err(e) => println!("Error! {e}"),
+            })
+        } else {
+            let mut stack = Executor::new(Mode::Script);
+            stack.evaluate_program(match get_file_contents(script.to_string()) {
+                Ok(code) => code,
+                Err(err) => {
+                    println!("Error! {err}");
+                    return;
+                }
+            })
         }
     } else {
         // Show a title
