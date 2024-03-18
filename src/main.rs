@@ -1010,12 +1010,18 @@ impl Executor {
             // Generate a instance of object
             "instance" => {
                 let data = self.pop_stack().get_list();
+                let mut methods = self.pop_stack().get_list();
                 let mut class = self.pop_stack().get_list();
                 let mut object: HashMap<String, Type> = HashMap::new();
                 let name = class[0].get_string();
 
                 for (name, element) in &mut class.to_owned()[1..class.len()].iter().zip(data) {
                     object.insert(name.to_owned().get_string(), element);
+                }
+
+                for item in &mut methods {
+                    let item = item.get_list();
+                    object.insert(item[0].clone().get_string(), item[1].clone());
                 }
 
                 self.stack.push(Type::Object(name, object))
@@ -1030,6 +1036,28 @@ impl Executor {
                             .unwrap_or(&Type::Error("property".to_string()))
                             .clone(),
                     ),
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Call the method of object
+            "method" => {
+                let method = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(name, value) => {
+                        let data = Type::Object(name, value.clone());
+                        self.memory
+                            .entry("self".to_string())
+                            .and_modify(|value| *value = data.clone())
+                            .or_insert(data);
+
+                        let program: String = match value.get(&method) {
+                            Some(i) => i.to_owned().get_string().to_string(),
+                            None => "".to_string(),
+                        };
+
+                        self.evaluate_program(program)
+                    }
                     _ => self.stack.push(Type::Error("not-object".to_string())),
                 }
             }
