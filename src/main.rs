@@ -5,10 +5,10 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
-use sys_info::{cpu_num, cpu_speed, os_release};
 use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use sys_info::{cpu_num, cpu_speed, hostname, mem_info, os_release, os_type};
 
 #[cfg(test)]
 mod test;
@@ -91,6 +91,7 @@ enum Type {
     String(String),
     Bool(bool),
     List(Vec<Type>),
+    Object(String, HashMap<String, Type>),
     Error(String),
 }
 
@@ -103,10 +104,13 @@ impl Type {
             Type::String(s) => format!("({})", s),
             Type::Bool(b) => b.to_string(),
             Type::List(list) => {
-                let syntax: Vec<String> = list.iter().map(|token| token.display()).collect();
-                format!("[{}]", syntax.join(" "))
+                let result: Vec<String> = list.iter().map(|token| token.display()).collect();
+                format!("[{}]", result.join(" "))
             }
             Type::Error(err) => format!("error:{err}"),
+            Type::Object(name, _) => {
+                format!("Object<{name}>")
+            }
         }
     }
 
@@ -118,6 +122,9 @@ impl Type {
             Type::Bool(b) => b.to_string(),
             Type::List(l) => Type::List(l.to_owned()).display(),
             Type::Error(err) => format!("error:{err}"),
+            Type::Object(name, _) => {
+                format!("Object<{name}>")
+            }
         }
     }
 
@@ -135,6 +142,7 @@ impl Type {
             }
             Type::List(l) => l.len() as f64,
             Type::Error(e) => e.parse().unwrap_or(0f64),
+            Type::Object(_, object) => object.len() as f64,
         }
     }
 
@@ -146,6 +154,7 @@ impl Type {
             Type::Bool(b) => *b,
             Type::List(l) => !l.is_empty(),
             Type::Error(e) => e.parse().unwrap_or(false),
+            Type::Object(_, object) => object.is_empty(),
         }
     }
 
@@ -161,6 +170,7 @@ impl Type {
             Type::Bool(b) => vec![Type::Bool(*b)],
             Type::List(l) => l.to_vec(),
             Type::Error(e) => vec![Type::Error(e.to_string())],
+            Type::Object(_, object) => object.values().map(|x| x.to_owned()).collect::<Vec<Type>>(),
         }
     }
 }
@@ -279,7 +289,7 @@ impl Executor {
 
         for token in syntax {
             // Show inside stack to debug
-            let stack = self.show_stack(); 
+            let stack = self.show_stack();
             self.log_print(format!("{stack} ←  {token}\n"));
 
             // Character vector for token processing
@@ -918,13 +928,14 @@ impl Executor {
             // Get data type of value
             "type" => {
                 let result = match self.pop_stack() {
-                    Type::Number(_) => "number",
-                    Type::String(_) => "string",
-                    Type::Bool(_) => "bool",
-                    Type::List(_) => "list",
-                    Type::Error(_) => "error",
-                }
-                .to_string();
+                    Type::Number(_) => "number".to_string(),
+                    Type::String(_) => "string".to_string(),
+                    Type::Bool(_) => "bool".to_string(),
+                    Type::List(_) => "list".to_string(),
+                    Type::Error(_) => "error".to_string(),
+                    Type::Object(name, _) => name.to_string(),
+                };
+
                 self.stack.push(Type::String(result));
             }
 
@@ -994,7 +1005,91 @@ impl Executor {
             // Sleep fixed time
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
-            // Command of external cooperation processing
+            // Commands of object oriented system
+
+            // Generate a instance of object
+            "instance" => {
+                let data = self.pop_stack().get_list();
+                let mut methods = self.pop_stack().get_list();
+                let mut class = self.pop_stack().get_list();
+                let mut object: HashMap<String, Type> = HashMap::new();
+                let name = class[0].get_string();
+
+                for (name, element) in &mut class.to_owned()[1..class.len()].iter().zip(data) {
+                    object.insert(name.to_owned().get_string(), element);
+                }
+
+                for item in &mut methods {
+                    let item = item.get_list();
+                    object.insert(item[0].clone().get_string(), item[1].clone());
+                }
+
+                self.stack.push(Type::Object(name, object))
+            }
+
+            // Get property of object
+            "property" => {
+                let name = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(_, data) => self.stack.push(
+                        data.get(name.as_str())
+                            .unwrap_or(&Type::Error("property".to_string()))
+                            .clone(),
+                    ),
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Call the method of object
+            "method" => {
+                let method = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(name, value) => {
+                        let data = Type::Object(name, value.clone());
+                        self.memory
+                            .entry("self".to_string())
+                            .and_modify(|value| *value = data.clone())
+                            .or_insert(data);
+
+                        let program: String = match value.get(&method) {
+                            Some(i) => i.to_owned().get_string().to_string(),
+                            None => "".to_string(),
+                        };
+
+                        self.evaluate_program(program)
+                    }
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Modify the property of object
+            "modify" => {
+                let data = self.pop_stack();
+                let property = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(name, mut value) => {
+                        value
+                            .entry(property)
+                            .and_modify(|value| *value = data.clone())
+                            .or_insert(data.clone());
+                    
+                            self.stack.push(Type::Object(name, value))
+                    }
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Get all of properties
+            "all" => match self.pop_stack() {
+                Type::Object(_, data) => self.stack.push(Type::List(
+                    data.keys()
+                        .map(|x| Type::String(x.to_owned()))
+                        .collect::<Vec<Type>>(),
+                )),
+                _ => self.stack.push(Type::Error("not-object".to_string())),
+            },
+
+            // Commands of external cooperation processing
 
             // Send the http request
             "request" => {
@@ -1076,6 +1171,29 @@ impl Executor {
                 }
             }
 
+            // Copy the item
+            "cp" => {
+                let to = self.pop_stack().get_string();
+                let from = self.pop_stack().get_string();
+
+                match fs::copy(from, to) {
+                    Ok(i) => self.stack.push(Type::Number(i as f64)),
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("cp".to_string()))
+                    }
+                }
+            }
+
+            // Get size of the file
+            "size-file" => match fs::metadata(self.pop_stack().get_string()) {
+                Ok(i) => self.stack.push(Type::Number(i.len() as f64)),
+                Err(e) => {
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("size-file".to_string()))
+                }
+            },
+
             // Get list of files
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
@@ -1100,12 +1218,22 @@ impl Executor {
 
             // Get system information
             "sys-info" => {
-                let types = self.pop_stack().get_string();
-                self.stack.push(match types.as_str() {
+                let option = self.pop_stack().get_string();
+                self.stack.push(match option.as_str() {
                     "os-release" => Type::String(os_release().unwrap_or("".to_string())),
+                    "os-type" => Type::String(os_type().unwrap_or("".to_string())),
                     "cpu-num" => Type::Number(cpu_num().unwrap_or(0) as f64),
                     "cpu-speed" => Type::Number(cpu_speed().unwrap_or(0) as f64),
-                    _ => Type::Error("sys-info".to_string())
+                    "host-name" => Type::String(hostname().unwrap_or("".to_string())),
+                    "mem-size" => match mem_info() {
+                        Ok(info) => Type::Number(info.total as f64),
+                        Err(_) => Type::Error("sys-info".to_string()),
+                    },
+                    "mem-used" => match mem_info() {
+                        Ok(info) => Type::Number((info.total - info.free) as f64),
+                        Err(_) => Type::Error("sys-info".to_string()),
+                    },
+                    _ => Type::Error("sys-info".to_string()),
                 })
             }
 
