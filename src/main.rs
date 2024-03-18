@@ -1062,6 +1062,23 @@ impl Executor {
                 }
             }
 
+            // Modify the property of object
+            "modify" => {
+                let data = self.pop_stack();
+                let property = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(name, mut value) => {
+                        value
+                            .entry(property)
+                            .and_modify(|value| *value = data.clone())
+                            .or_insert(data.clone());
+                    
+                            self.stack.push(Type::Object(name, value))
+                    }
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
             // Get all of properties
             "all" => match self.pop_stack() {
                 Type::Object(_, data) => self.stack.push(Type::List(
