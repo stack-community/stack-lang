@@ -1120,9 +1120,15 @@ impl Executor {
             // Send the http request
             "request" => {
                 let url = self.pop_stack().get_string();
-                self.stack.push(Type::String(
-                    reqwest::blocking::get(url).unwrap().text().unwrap(),
-                ));
+                match reqwest::blocking::get(url) {
+                    Ok(i) => self
+                        .stack
+                        .push(Type::String(i.text().unwrap_or("".to_string()))),
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("request".to_string()))
+                    }
+                }
             }
 
             // Open the file or url
