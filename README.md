@@ -15,6 +15,8 @@ chmod +x ./run.stack.sh
 ./run-stack.sh
 ```
 
+### Normal Install
+
 Stack programming language's interpreter binary files for Windows are in the [release](https://github.com/Stack-Programing-Community/Stack-Programing-Language/releases).
 
 the releases are Regularly when new function become stable, that's good way if you prize safety.
