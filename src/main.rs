@@ -1020,7 +1020,6 @@ impl Executor {
             // Generate a instance of object
             "instance" => {
                 let data = self.pop_stack().get_list();
-                let mut methods = self.pop_stack().get_list();
                 let mut class = self.pop_stack().get_list();
                 let mut object: HashMap<String, Type> = HashMap::new();
 
@@ -1032,18 +1031,22 @@ impl Executor {
                     return;
                 };
 
-                for (name, element) in &mut class.to_owned()[1..class.len()].iter().zip(data) {
-                    object.insert(name.to_owned().get_string(), element);
-                }
-
-                for item in &mut methods {
-                    let item = item.get_list();
-                    if item.len() >= 2 {
+                let mut index = 0;
+                for item in &mut class.to_owned()[1..class.len()].iter() {
+                    let mut item = item.to_owned();
+                    if item.get_list().len() == 1 {
+                        let element = &data[index];
+                        object.insert(
+                            item.get_list()[0].to_owned().get_string(),
+                            element.to_owned(),
+                        );
+                        index += 1;
+                    } else if item.get_list().len() >= 2 {
+                        let item = item.get_list();
                         object.insert(item[0].clone().get_string(), item[1].clone());
                     } else {
-                        self.log_print("Error! the default data structure is wrong.".to_string());
+                        self.log_print("Error! the class data structure is wrong.".to_string());
                         self.stack.push(Type::Error("instance-default".to_string()));
-                        return;
                     }
                 }
 
