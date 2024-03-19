@@ -5,6 +5,16 @@ The powerful script language designed with a stack oriented approach for efficie
 
 ## Installation
 
+### If you don't want to install...
+
+```bash
+git clone https://github.com/Stack-Programing-Community/Stack-Programing-Language.git
+cd Stack-Programing-Language
+cargo build --release
+chmod +x ./run.stack.sh
+./run-stack.sh
+```
+
 Stack programming language's interpreter binary files for Windows are in the [release](https://github.com/Stack-Programing-Community/Stack-Programing-Language/releases).
 
 the releases are Regularly when new function become stable, that's good way if you prize safety.
