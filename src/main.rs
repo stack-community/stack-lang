@@ -1035,7 +1035,15 @@ impl Executor {
                 for item in &mut class.to_owned()[1..class.len()].iter() {
                     let mut item = item.to_owned();
                     if item.get_list().len() == 1 {
-                        let element = &data[index];
+                        let element = match data.get(index) {
+                            Some(value) => value,
+                            None => {
+                                self.log_print(format!("Error! initial data is shortage\n"));
+                                self.stack
+                                    .push(Type::Error("instance-shortage".to_string()));
+                                return;
+                            }
+                        };
                         object.insert(
                             item.get_list()[0].to_owned().get_string(),
                             element.to_owned(),
