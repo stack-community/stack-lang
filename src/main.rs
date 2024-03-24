@@ -1,3 +1,4 @@
+use clap::{App, Arg};
 use rand::seq::SliceRandom;
 use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
@@ -5,40 +6,49 @@ use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
-use sys_info::{cpu_num, cpu_speed, os_release};
 use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use sys_info::{cpu_num, cpu_speed, hostname, mem_info, os_release, os_type};
 
 #[cfg(test)]
 mod test;
 
 fn main() {
-    // Reading command line arguments
-    let args = env::args().collect::<Vec<_>>();
-    if args.len() > 2 {
-        // Open the script file
-        match get_file_contents(args[1].clone()) {
-            Ok(code) => {
-                // Judge execution mode
-                if args[2].contains("-d") {
-                    let mut executor = Executor::new(Mode::Debug);
-                    executor.evaluate_program(code); // Debug execution
-                } else {
-                    let mut executor = Executor::new(Mode::Script);
-                    executor.evaluate_program(code); // Script execution
+    let matches = App::new("Stack")
+        .version("1.11")
+        .author("Stack Programming Community")
+        .about("The powerful script language designed with a stack oriented approach for efficient execution. ")
+        .arg(Arg::new("script")
+            .index(1)
+            .value_name("FILE")
+            .help("Sets the script file to execution")
+            .takes_value(true))
+        .arg(Arg::new("debug")
+            .short('d')
+            .long("debug")
+            .help("Enables debug mode"))
+        .get_matches();
+
+    if let Some(script) = matches.value_of("script") {
+        if matches.is_present("debug") {
+            let mut stack = Executor::new(Mode::Debug);
+            stack.evaluate_program(match get_file_contents(script.to_string()) {
+                Ok(code) => code,
+                Err(err) => {
+                    println!("Error! {err}");
+                    return;
                 }
-            }
-            Err(e) => println!("Error! {e}"),
-        }
-    } else if args.len() > 1 {
-        // Open the script file
-        match get_file_contents(args[1].clone()) {
-            Ok(code) => {
-                let mut executor = Executor::new(Mode::Script);
-                executor.evaluate_program(code); // Default is script execution
-            }
-            Err(e) => println!("Error! {e}"),
+            })
+        } else {
+            let mut stack = Executor::new(Mode::Script);
+            stack.evaluate_program(match get_file_contents(script.to_string()) {
+                Ok(code) => code,
+                Err(err) => {
+                    println!("Error! {err}");
+                    return;
+                }
+            })
         }
     } else {
         // Show a title
@@ -91,6 +101,7 @@ enum Type {
     String(String),
     Bool(bool),
     List(Vec<Type>),
+    Object(String, HashMap<String, Type>),
     Error(String),
 }
 
@@ -103,10 +114,13 @@ impl Type {
             Type::String(s) => format!("({})", s),
             Type::Bool(b) => b.to_string(),
             Type::List(list) => {
-                let syntax: Vec<String> = list.iter().map(|token| token.display()).collect();
-                format!("[{}]", syntax.join(" "))
+                let result: Vec<String> = list.iter().map(|token| token.display()).collect();
+                format!("[{}]", result.join(" "))
             }
             Type::Error(err) => format!("error:{err}"),
+            Type::Object(name, _) => {
+                format!("Object<{name}>")
+            }
         }
     }
 
@@ -118,6 +132,9 @@ impl Type {
             Type::Bool(b) => b.to_string(),
             Type::List(l) => Type::List(l.to_owned()).display(),
             Type::Error(err) => format!("error:{err}"),
+            Type::Object(name, _) => {
+                format!("Object<{name}>")
+            }
         }
     }
 
@@ -135,6 +152,7 @@ impl Type {
             }
             Type::List(l) => l.len() as f64,
             Type::Error(e) => e.parse().unwrap_or(0f64),
+            Type::Object(_, object) => object.len() as f64,
         }
     }
 
@@ -146,6 +164,7 @@ impl Type {
             Type::Bool(b) => *b,
             Type::List(l) => !l.is_empty(),
             Type::Error(e) => e.parse().unwrap_or(false),
+            Type::Object(_, object) => object.is_empty(),
         }
     }
 
@@ -161,6 +180,7 @@ impl Type {
             Type::Bool(b) => vec![Type::Bool(*b)],
             Type::List(l) => l.to_vec(),
             Type::Error(e) => vec![Type::Error(e.to_string())],
+            Type::Object(_, object) => object.values().map(|x| x.to_owned()).collect::<Vec<Type>>(),
         }
     }
 }
@@ -279,7 +299,7 @@ impl Executor {
 
         for token in syntax {
             // Show inside stack to debug
-            let stack = self.show_stack(); 
+            let stack = self.show_stack();
             self.log_print(format!("{stack} ←  {token}\n"));
 
             // Character vector for token processing
@@ -918,13 +938,14 @@ impl Executor {
             // Get data type of value
             "type" => {
                 let result = match self.pop_stack() {
-                    Type::Number(_) => "number",
-                    Type::String(_) => "string",
-                    Type::Bool(_) => "bool",
-                    Type::List(_) => "list",
-                    Type::Error(_) => "error",
-                }
-                .to_string();
+                    Type::Number(_) => "number".to_string(),
+                    Type::String(_) => "string".to_string(),
+                    Type::Bool(_) => "bool".to_string(),
+                    Type::List(_) => "list".to_string(),
+                    Type::Error(_) => "error".to_string(),
+                    Type::Object(name, _) => name.to_string(),
+                };
+
                 self.stack.push(Type::String(result));
             }
 
@@ -994,14 +1015,128 @@ impl Executor {
             // Sleep fixed time
             "sleep" => sleep(Duration::from_secs_f64(self.pop_stack().get_number())),
 
-            // Command of external cooperation processing
+            // Commands of object oriented system
+
+            // Generate a instance of object
+            "instance" => {
+                let data = self.pop_stack().get_list();
+                let mut class = self.pop_stack().get_list();
+                let mut object: HashMap<String, Type> = HashMap::new();
+
+                let name = if !class.is_empty() {
+                    class[0].get_string()
+                } else {
+                    self.log_print("Error! the type name is not found.".to_string());
+                    self.stack.push(Type::Error("instance-name".to_string()));
+                    return;
+                };
+
+                let mut index = 0;
+                for item in &mut class.to_owned()[1..class.len()].iter() {
+                    let mut item = item.to_owned();
+                    if item.get_list().len() == 1 {
+                        let element = match data.get(index) {
+                            Some(value) => value,
+                            None => {
+                                self.log_print(format!("Error! initial data is shortage\n"));
+                                self.stack
+                                    .push(Type::Error("instance-shortage".to_string()));
+                                return;
+                            }
+                        };
+                        object.insert(
+                            item.get_list()[0].to_owned().get_string(),
+                            element.to_owned(),
+                        );
+                        index += 1;
+                    } else if item.get_list().len() >= 2 {
+                        let item = item.get_list();
+                        object.insert(item[0].clone().get_string(), item[1].clone());
+                    } else {
+                        self.log_print("Error! the class data structure is wrong.".to_string());
+                        self.stack.push(Type::Error("instance-default".to_string()));
+                    }
+                }
+
+                self.stack.push(Type::Object(name, object))
+            }
+
+            // Get property of object
+            "property" => {
+                let name = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(_, data) => self.stack.push(
+                        data.get(name.as_str())
+                            .unwrap_or(&Type::Error("property".to_string()))
+                            .clone(),
+                    ),
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Call the method of object
+            "method" => {
+                let method = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(name, value) => {
+                        let data = Type::Object(name, value.clone());
+                        self.memory
+                            .entry("self".to_string())
+                            .and_modify(|value| *value = data.clone())
+                            .or_insert(data);
+
+                        let program: String = match value.get(&method) {
+                            Some(i) => i.to_owned().get_string().to_string(),
+                            None => "".to_string(),
+                        };
+
+                        self.evaluate_program(program)
+                    }
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Modify the property of object
+            "modify" => {
+                let data = self.pop_stack();
+                let property = self.pop_stack().get_string();
+                match self.pop_stack() {
+                    Type::Object(name, mut value) => {
+                        value
+                            .entry(property)
+                            .and_modify(|value| *value = data.clone())
+                            .or_insert(data.clone());
+
+                        self.stack.push(Type::Object(name, value))
+                    }
+                    _ => self.stack.push(Type::Error("not-object".to_string())),
+                }
+            }
+
+            // Get all of properties
+            "all" => match self.pop_stack() {
+                Type::Object(_, data) => self.stack.push(Type::List(
+                    data.keys()
+                        .map(|x| Type::String(x.to_owned()))
+                        .collect::<Vec<Type>>(),
+                )),
+                _ => self.stack.push(Type::Error("not-object".to_string())),
+            },
+
+            // Commands of external cooperation processing
 
             // Send the http request
             "request" => {
                 let url = self.pop_stack().get_string();
-                self.stack.push(Type::String(
-                    reqwest::blocking::get(url).unwrap().text().unwrap(),
-                ));
+                match reqwest::blocking::get(url) {
+                    Ok(i) => self
+                        .stack
+                        .push(Type::String(i.text().unwrap_or("".to_string()))),
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("request".to_string()))
+                    }
+                }
             }
 
             // Open the file or url
@@ -1076,6 +1211,29 @@ impl Executor {
                 }
             }
 
+            // Copy the item
+            "cp" => {
+                let to = self.pop_stack().get_string();
+                let from = self.pop_stack().get_string();
+
+                match fs::copy(from, to) {
+                    Ok(i) => self.stack.push(Type::Number(i as f64)),
+                    Err(e) => {
+                        self.log_print(format!("Error! {e}\n"));
+                        self.stack.push(Type::Error("cp".to_string()))
+                    }
+                }
+            }
+
+            // Get size of the file
+            "size-file" => match fs::metadata(self.pop_stack().get_string()) {
+                Ok(i) => self.stack.push(Type::Number(i.len() as f64)),
+                Err(e) => {
+                    self.log_print(format!("Error! {e}\n"));
+                    self.stack.push(Type::Error("size-file".to_string()))
+                }
+            },
+
             // Get list of files
             "ls" => {
                 if let Ok(entries) = fs::read_dir(".") {
@@ -1100,12 +1258,22 @@ impl Executor {
 
             // Get system information
             "sys-info" => {
-                let types = self.pop_stack().get_string();
-                self.stack.push(match types.as_str() {
+                let option = self.pop_stack().get_string();
+                self.stack.push(match option.as_str() {
                     "os-release" => Type::String(os_release().unwrap_or("".to_string())),
+                    "os-type" => Type::String(os_type().unwrap_or("".to_string())),
                     "cpu-num" => Type::Number(cpu_num().unwrap_or(0) as f64),
                     "cpu-speed" => Type::Number(cpu_speed().unwrap_or(0) as f64),
-                    _ => Type::Error("sys-info".to_string())
+                    "host-name" => Type::String(hostname().unwrap_or("".to_string())),
+                    "mem-size" => match mem_info() {
+                        Ok(info) => Type::Number(info.total as f64),
+                        Err(_) => Type::Error("sys-info".to_string()),
+                    },
+                    "mem-used" => match mem_info() {
+                        Ok(info) => Type::Number((info.total - info.free) as f64),
+                        Err(_) => Type::Error("sys-info".to_string()),
+                    },
+                    _ => Type::Error("sys-info".to_string()),
                 })
             }
 
