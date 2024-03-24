@@ -288,12 +288,16 @@ impl Executor {
                     if parentheses == 0 && brackets == 0 && !hash {
                         if escape {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 416f9ec (Update main.rs)
                             match c {
                                 'n' => buffer.push_str("\\n"),
                                 't' => buffer.push_str("\\t"),
                                 'r' => buffer.push_str("\\r"),
                                 _ => buffer.push(c),
                             }
+<<<<<<< HEAD
 =======
                             buffer.push(match c {
                                 'n' => '\n',
@@ -302,6 +306,8 @@ impl Executor {
                                 _ => c,
                             })
 >>>>>>> e0ee7bf (Add string escape)
+=======
+>>>>>>> 416f9ec (Update main.rs)
                         } else {
                             buffer.push(c);
                         }
@@ -384,12 +390,16 @@ impl Executor {
                                 if parentheses == 0 && brackets == 0 && !hash {
                                     if escape {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 416f9ec (Update main.rs)
                                         match c {
                                             'n' => buffer.push_str("\\n"),
                                             't' => buffer.push_str("\\t"),
                                             'r' => buffer.push_str("\\r"),
                                             _ => buffer.push(c),
                                         }
+<<<<<<< HEAD
 =======
                                         buffer.push(match c {
                                             'n' => '\n',
@@ -398,6 +408,8 @@ impl Executor {
                                             _ => c,
                                         })
 >>>>>>> e0ee7bf (Add string escape)
+=======
+>>>>>>> 416f9ec (Update main.rs)
                                     } else {
                                         buffer.push(c);
                                     }
