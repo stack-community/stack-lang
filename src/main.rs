@@ -287,12 +287,12 @@ impl Executor {
                 _ => {
                     if parentheses == 0 && brackets == 0 && !hash {
                         if escape {
-                            buffer.push(match c {
-                                'n' => '\n',
-                                't' => '\t',
-                                'r' => '\r',
-                                _ => c,
-                            })
+                            match c {
+                                'n' => buffer.push_str("\\n"),
+                                't' => buffer.push_str("\\t"),
+                                'r' => buffer.push_str("\\r"),
+                                _ => buffer.push(c),
+                            }
                         } else {
                             buffer.push(c);
                         }
@@ -374,12 +374,12 @@ impl Executor {
                             _ => {
                                 if parentheses == 0 && brackets == 0 && !hash {
                                     if escape {
-                                        buffer.push(match c {
-                                            'n' => '\n',
-                                            't' => '\t',
-                                            'r' => '\r',
-                                            _ => c,
-                                        })
+                                        match c {
+                                            'n' => buffer.push_str("\\n"),
+                                            't' => buffer.push_str("\\t"),
+                                            'r' => buffer.push_str("\\r"),
+                                            _ => buffer.push(c),
+                                        }
                                     } else {
                                         buffer.push(c);
                                     }
@@ -700,6 +700,11 @@ impl Executor {
             // Standard output
             "print" => {
                 let a = self.pop_stack().get_string();
+
+                let a = a.replace("\\n", "\n");
+                let a = a.replace("\\t", "\t");
+                let a = a.replace("\\r", "\r");
+
                 if let Mode::Debug = self.mode {
                     println!("[Output]: {a}");
                 } else {
