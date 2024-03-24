@@ -1,0 +1,24 @@
+(
+
+  (Welcome to...) print
+
+  (Stack) () true if
+  
+  ((str) var [str (ming)] () join) func var
+  (Program) func eval
+  
+  [(Lang) (uage) (fake)] l var
+  l 0 get
+  l 1 get
+  (b) var
+  (a) var
+  [a b] () join
+  
+  (a) var
+  (b) var
+  (c) var
+  [c b a] ( ) join (a) var
+  [a (!)] () join print
+  
+) (do) var
+do eval
