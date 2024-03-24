@@ -287,12 +287,21 @@ impl Executor {
                 _ => {
                     if parentheses == 0 && brackets == 0 && !hash {
                         if escape {
+<<<<<<< HEAD
                             match c {
                                 'n' => buffer.push_str("\\n"),
                                 't' => buffer.push_str("\\t"),
                                 'r' => buffer.push_str("\\r"),
                                 _ => buffer.push(c),
                             }
+=======
+                            buffer.push(match c {
+                                'n' => '\n',
+                                't' => '\t',
+                                'r' => '\r',
+                                _ => c,
+                            })
+>>>>>>> e0ee7bf (Add string escape)
                         } else {
                             buffer.push(c);
                         }
@@ -374,12 +383,21 @@ impl Executor {
                             _ => {
                                 if parentheses == 0 && brackets == 0 && !hash {
                                     if escape {
+<<<<<<< HEAD
                                         match c {
                                             'n' => buffer.push_str("\\n"),
                                             't' => buffer.push_str("\\t"),
                                             'r' => buffer.push_str("\\r"),
                                             _ => buffer.push(c),
                                         }
+=======
+                                        buffer.push(match c {
+                                            'n' => '\n',
+                                            't' => '\t',
+                                            'r' => '\r',
+                                            _ => c,
+                                        })
+>>>>>>> e0ee7bf (Add string escape)
                                     } else {
                                         buffer.push(c);
                                     }
