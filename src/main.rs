@@ -703,7 +703,7 @@ impl Executor {
                 if let Mode::Debug = self.mode {
                     println!("[Output]: {a}");
                 } else {
-                    println!("{a}");
+                    print!("{a}");
                 }
             }
 
