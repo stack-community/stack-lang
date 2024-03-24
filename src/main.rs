@@ -869,11 +869,16 @@ impl Executor {
                     }
                 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 
                 self.log_print(String::from("Error! item not found in the list\n"));
 =======
                 self.log_print(String::from("Error! item not found in the list").as_str().to_owned() + "\n");
 >>>>>>> ce3cc7e (git)
+=======
+                
+                self.log_print(String::from("Error! item not found in the list\n"));
+>>>>>>> 0c174e6 (Update main.rs)
                 self.stack.push(Type::Error(String::from("item-not-found")));
             }
 
