@@ -244,44 +244,65 @@ impl Executor {
 
         let mut syntax = Vec::new(); // Token string
         let mut buffer = String::new(); // Temporary storage
-        let mut in_brackets = 0; // String's nest structure
-        let mut in_parentheses = 0; // List's nest structure
-        let mut in_hash = false; // Is it Comment
+        let mut brackets = 0; // String's nest structure
+        let mut parentheses = 0; // List's nest structure
+        let mut hash = false; // Is it Comment
+        let mut escape = false; // Flag to indicate next character is escaped
 
         for c in code.chars() {
             match c {
-                '(' => {
-                    in_brackets += 1;
+                '\\' if !escape => {
+                    escape = true;
+                }
+                '(' if !hash && !escape => {
+                    brackets += 1;
                     buffer.push('(');
                 }
-                ')' => {
-                    in_brackets -= 1;
+                ')' if !hash && !escape => {
+                    brackets -= 1;
                     buffer.push(')');
                 }
-                '#' if !in_hash => {
-                    in_hash = true;
+                '#' if !hash && !escape => {
+                    hash = true;
                     buffer.push('#');
                 }
-                '#' if in_hash => {
-                    in_hash = false;
+                '#' if hash && !escape => {
+                    hash = false;
                     buffer.push('#');
                 }
-                '[' if in_brackets == 0 => {
-                    in_parentheses += 1;
+                '[' if !hash && brackets == 0 && !escape => {
+                    parentheses += 1;
                     buffer.push('[');
                 }
-                ']' if in_brackets == 0 => {
-                    in_parentheses -= 1;
+                ']' if !hash && brackets == 0 && !escape => {
+                    parentheses -= 1;
                     buffer.push(']');
                 }
-                ' ' if !in_hash && in_parentheses == 0 && in_brackets == 0 => {
+                ' ' if !hash && parentheses == 0 && brackets == 0 && !escape => {
                     if !buffer.is_empty() {
                         syntax.push(buffer.clone());
                         buffer.clear();
                     }
                 }
                 _ => {
-                    buffer.push(c);
+                    if parentheses == 0 && brackets == 0 && !hash {
+                        if escape {
+                            buffer.push(match c {
+                                'n' => '\n',
+                                't' => '\t',
+                                'r' => '\r',
+                                _ => c,
+                            })
+                        } else {
+                            buffer.push(c);
+                        }
+                    } else {
+                        if escape {
+                            buffer.push('\\');
+                        }
+                        buffer.push(c);
+                    }
+                    escape = false; // Reset escape flag for non-escape characters
                 }
             }
         }
@@ -314,8 +335,67 @@ impl Executor {
                 self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
             } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
                 // Push string value on the stack
-                self.stack
-                    .push(Type::String(token[1..token.len() - 1].to_string()));
+                let string = {
+                    let mut buffer = String::new(); // Temporary storage
+                    let mut brackets = 0; // String's nest structure
+                    let mut parentheses = 0; // List's nest structure
+                    let mut hash = false; // Is it Comment
+                    let mut escape = false; // Flag to indicate next character is escaped
+
+                    for c in token[1..token.len() - 1].to_string().chars() {
+                        match c {
+                            '\\' if !escape => {
+                                escape = true;
+                            }
+                            '(' if !hash && !escape => {
+                                brackets += 1;
+                                buffer.push('(');
+                            }
+                            ')' if !hash && !escape => {
+                                brackets -= 1;
+                                buffer.push(')');
+                            }
+                            '#' if !hash && !escape => {
+                                hash = true;
+                                buffer.push('#');
+                            }
+                            '#' if hash && !escape => {
+                                hash = false;
+                                buffer.push('#');
+                            }
+                            '[' if !hash && brackets == 0 && !escape => {
+                                parentheses += 1;
+                                buffer.push('[');
+                            }
+                            ']' if !hash && brackets == 0 && !escape => {
+                                parentheses -= 1;
+                                buffer.push(']');
+                            }
+                            _ => {
+                                if parentheses == 0 && brackets == 0 && !hash {
+                                    if escape {
+                                        buffer.push(match c {
+                                            'n' => '\n',
+                                            't' => '\t',
+                                            'r' => '\r',
+                                            _ => c,
+                                        })
+                                    } else {
+                                        buffer.push(c);
+                                    }
+                                } else {
+                                    if escape {
+                                        buffer.push('\\');
+                                    }
+                                    buffer.push(c);
+                                }
+                                escape = false; // Reset escape flag for non-escape characters
+                            }
+                        }
+                    }
+                    buffer
+                };
+                self.stack.push(Type::String(string));
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
                 // Push list value on the stack
                 let old_len = self.stack.len(); // length of old stack
