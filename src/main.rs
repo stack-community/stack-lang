@@ -870,6 +870,7 @@ impl Executor {
                 }
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
                 self.log_print(String::from("Error! item not found in the list\n"));
 =======
@@ -877,6 +878,9 @@ impl Executor {
 >>>>>>> ce3cc7e (git)
 =======
                 
+=======
+
+>>>>>>> 61ad1c1 (Format)
                 self.log_print(String::from("Error! item not found in the list\n"));
 >>>>>>> 0c174e6 (Update main.rs)
                 self.stack.push(Type::Error(String::from("item-not-found")));
