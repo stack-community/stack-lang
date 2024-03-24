@@ -783,7 +783,7 @@ impl Executor {
                         return;
                     }
                 }
-                
+
                 self.log_print(String::from("Error! item not found in the list\n"));
                 self.stack.push(Type::Error(String::from("item-not-found")));
             }
