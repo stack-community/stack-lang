@@ -1378,8 +1378,42 @@ impl Executor {
                 })
             }
 
+<<<<<<< HEAD
+=======
+            "index" => {
+                let findhint = self.pop_stack().get_string();
+                let findtarget = self.pop_stack().get_list();
+
+                for index in 0..(findtarget.len()) {
+                    if findhint == findtarget[index].clone().get_string() {
+                        self.stack.push(Type::Number(index as f64));
+                        return;
+                    }
+                }
+                self.log_print("Error! item not found in this list".to_owned() + "\n");
+                self.stack.push(Type::Error(String::from("item-not-found")));
+            }
+
+            "cls" => {
+                self.clearscreen();
+            }
+
+            "clear" => {
+                self.clearscreen();
+            }
+
+>>>>>>> 887510b (git)
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
+        }
+    }
+
+    fn clearscreen(&mut self) {
+        let result = clearscreen::clear();
+        if result.is_err() {
+            println!("Error! Failed to clear screen");
+            self.stack
+                .push(Type::Error(String::from("failed-to-clear-screen")));
         }
     }
 
