@@ -1379,6 +1379,10 @@ impl Executor {
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> ce80cb2 (git)
             "index" => {
                 let findhint = self.pop_stack().get_string();
                 let findtarget = self.pop_stack().get_list();
@@ -1401,8 +1405,12 @@ impl Executor {
                 self.clearscreen();
             }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 1d34bfe (Refactoring)
+=======
+>>>>>>> 887510b (git)
+>>>>>>> ce80cb2 (git)
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
