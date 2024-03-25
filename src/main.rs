@@ -394,7 +394,7 @@ impl Executor {
                         }
                     }
                     buffer
-                };// Push string value on the stack
+                }; // Push string value on the stack
                 self.stack.push(Type::String(string));
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
                 // Push list value on the stack
@@ -700,11 +700,11 @@ impl Executor {
             // Standard output
             "print" => {
                 let a = self.pop_stack().get_string();
-                
-                let a  = a.replace("\\n", "\n");
-                let a  = a.replace("\\t", "\t");
-                let a  = a.replace("\\r", "\r");
-                
+
+                let a = a.replace("\\n", "\n");
+                let a = a.replace("\\t", "\t");
+                let a = a.replace("\\r", "\r");
+
                 if let Mode::Debug = self.mode {
                     println!("[Output]: {a}");
                 } else {
