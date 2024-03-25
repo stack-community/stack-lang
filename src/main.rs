@@ -772,6 +772,21 @@ impl Executor {
                 self.stack.push(Type::List(list));
             }
 
+            // Get index of the list
+            "index" => {
+                let findhint = self.pop_stack().get_string();
+                let findtarget = self.pop_stack().get_list();
+
+                for index in 0..(findtarget.len()) {
+                    if findhint == findtarget[index].clone().get_string() {
+                        self.stack.push(Type::Number(index as f64));
+                        return;
+                    }
+                }
+                self.log_print(String::from("Error! item not found in the list").as_str().to_owned() + "\n");
+                self.stack.push(Type::Error(String::from("item-not-found")));
+            }
+
             // Sorting in the list
             "sort" => {
                 let mut list: Vec<String> = self
@@ -1277,6 +1292,7 @@ impl Executor {
                 })
             }
 
+<<<<<<< HEAD
             "index" => {
                 let findhint = self.pop_stack().get_string();
                 let findtarget = self.pop_stack().get_list();
@@ -1299,6 +1315,8 @@ impl Executor {
                 self.clearscreen();
             }
 
+=======
+>>>>>>> 1d34bfe (Refactoring)
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
