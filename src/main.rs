@@ -244,70 +244,55 @@ impl Executor {
 
         let mut syntax = Vec::new(); // Token string
         let mut buffer = String::new(); // Temporary storage
-        let mut in_brackets = 0; // String's nest structure
-        let mut in_parentheses = 0; // List's nest structure
-        let mut in_hash = false; // Is it Comment
+        let mut brackets = 0; // String's nest structure
+        let mut parentheses = 0; // List's nest structure
+        let mut hash = false; // Is it Comment
+        let mut escape = false; // Flag to indicate next character is escaped
 
         for c in code.chars() {
             match c {
-                '(' => {
-                    in_brackets += 1;
+                '\\' if !escape => {
+                    escape = true;
+                }
+                '(' if !hash && !escape => {
+                    brackets += 1;
                     buffer.push('(');
                 }
-                ')' => {
-                    in_brackets -= 1;
+                ')' if !hash && !escape => {
+                    brackets -= 1;
                     buffer.push(')');
                 }
-                '#' if !in_hash => {
-                    in_hash = true;
+                '#' if !hash && !escape => {
+                    hash = true;
                     buffer.push('#');
                 }
-                '#' if in_hash => {
-                    in_hash = false;
+                '#' if hash && !escape => {
+                    hash = false;
                     buffer.push('#');
                 }
-                '[' if in_brackets == 0 => {
-                    in_parentheses += 1;
+                '[' if !hash && brackets == 0 && !escape => {
+                    parentheses += 1;
                     buffer.push('[');
                 }
-                ']' if in_brackets == 0 => {
-                    in_parentheses -= 1;
+                ']' if !hash && brackets == 0 && !escape => {
+                    parentheses -= 1;
                     buffer.push(']');
                 }
-                ' ' if !in_hash && in_parentheses == 0 && in_brackets == 0 => {
+                ' ' if !hash && parentheses == 0 && brackets == 0 && !escape => {
                     if !buffer.is_empty() {
                         syntax.push(buffer.clone());
                         buffer.clear();
                     }
                 }
                 _ => {
-<<<<<<< HEAD
-                    buffer.push(c);
-=======
-<<<<<<< HEAD
                     if parentheses == 0 && brackets == 0 && !hash {
                         if escape {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 416f9ec (Update main.rs)
                             match c {
                                 'n' => buffer.push_str("\\n"),
                                 't' => buffer.push_str("\\t"),
                                 'r' => buffer.push_str("\\r"),
                                 _ => buffer.push(c),
                             }
-<<<<<<< HEAD
-=======
-                            buffer.push(match c {
-                                'n' => '\n',
-                                't' => '\t',
-                                'r' => '\r',
-                                _ => c,
-                            })
->>>>>>> e0ee7bf (Add string escape)
-=======
->>>>>>> 416f9ec (Update main.rs)
                         } else {
                             buffer.push(c);
                         }
@@ -318,10 +303,6 @@ impl Executor {
                         buffer.push(c);
                     }
                     escape = false; // Reset escape flag for non-escape characters
-=======
-                    buffer.push(c);
->>>>>>> 76e82be (git)
->>>>>>> upstream-main
                 }
             }
         }
@@ -354,11 +335,8 @@ impl Executor {
                 self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
             } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
                 // Push string value on the stack
-<<<<<<< HEAD
                 self.stack
                     .push(Type::String(token[1..token.len() - 1].to_string()));
-=======
-<<<<<<< HEAD
                 let string = {
                     let mut buffer = String::new(); // Temporary storage
                     let mut brackets = 0; // String's nest structure
@@ -398,27 +376,18 @@ impl Executor {
                             _ => {
                                 if parentheses == 0 && brackets == 0 && !hash {
                                     if escape {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 416f9ec (Update main.rs)
                                         match c {
                                             'n' => buffer.push_str("\\n"),
                                             't' => buffer.push_str("\\t"),
                                             'r' => buffer.push_str("\\r"),
                                             _ => buffer.push(c),
                                         }
-<<<<<<< HEAD
-=======
                                         buffer.push(match c {
                                             'n' => '\n',
                                             't' => '\t',
                                             'r' => '\r',
                                             _ => c,
                                         })
->>>>>>> e0ee7bf (Add string escape)
-=======
->>>>>>> 416f9ec (Update main.rs)
                                     } else {
                                         buffer.push(c);
                                     }
@@ -435,11 +404,8 @@ impl Executor {
                     buffer
                 };
                 self.stack.push(Type::String(string));
-=======
                 self.stack
                     .push(Type::String(token[1..token.len() - 1].to_string()));
->>>>>>> 76e82be (git)
->>>>>>> upstream-main
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
                 // Push list value on the stack
                 let old_len = self.stack.len(); // length of old stack
@@ -907,32 +873,7 @@ impl Executor {
                         return;
                     }
                 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> cdb5350 (git)
-
                 self.log_print(String::from("Error! item not found in the list\n"));
-=======
-                self.log_print(String::from("Error! item not found in the list").as_str().to_owned() + "\n");
->>>>>>> ce3cc7e (git)
-<<<<<<< HEAD
-=======
-                
-=======
-
->>>>>>> 61ad1c1 (Format)
-                self.log_print(String::from("Error! item not found in the list\n"));
->>>>>>> 0c174e6 (Update main.rs)
-=======
->>>>>>> cdb5350 (git)
-=======
-
-                self.log_print(String::from("Error! item not found in the list\n"));
->>>>>>> 76e82be (git)
                 self.stack.push(Type::Error(String::from("item-not-found")));
             }
 
@@ -1441,52 +1382,6 @@ impl Executor {
                 })
             }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
-<<<<<<< HEAD
->>>>>>> ce3cc7e (git)
-=======
->>>>>>> ce80cb2 (git)
->>>>>>> 74bbfe3 (git)
-=======
-=======
->>>>>>> 1843023 (git)
-=======
-=======
-=======
-<<<<<<< HEAD
->>>>>>> ce3cc7e (git)
-<<<<<<< HEAD
->>>>>>> cdb5350 (git)
-=======
-=======
->>>>>>> ce80cb2 (git)
->>>>>>> 74bbfe3 (git)
->>>>>>> e1b0d54 (git)
-=======
->>>>>>> 76e82be (git)
->>>>>>> upstream-main
-            "index" => {
-                let findhint = self.pop_stack().get_string();
-                let findtarget = self.pop_stack().get_list();
-
-                for index in 0..(findtarget.len()) {
-                    if findhint == findtarget[index].clone().get_string() {
-                        self.stack.push(Type::Number(index as f64));
-                        return;
-                    }
-                }
-                self.log_print("Error! item not found in this list".to_owned() + "\n");
-                self.stack.push(Type::Error(String::from("item-not-found")));
-            }
-
             "cls" => {
                 self.clearscreen();
             }
@@ -1495,45 +1390,6 @@ impl Executor {
                 self.clearscreen();
             }
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> cdb5350 (git)
-=======
->>>>>>> e1b0d54 (git)
->>>>>>> 887510b (git)
-=======
-=======
->>>>>>> 1d34bfe (Refactoring)
->>>>>>> ce3cc7e (git)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> e1b0d54 (git)
-=======
-=======
->>>>>>> 1d34bfe (Refactoring)
-=======
->>>>>>> 887510b (git)
->>>>>>> ce80cb2 (git)
->>>>>>> 74bbfe3 (git)
-<<<<<<< HEAD
-=======
->>>>>>> 887510b (git)
->>>>>>> 1843023 (git)
-=======
->>>>>>> cdb5350 (git)
-=======
->>>>>>> e1b0d54 (git)
-=======
->>>>>>> 76e82be (git)
->>>>>>> upstream-main
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
