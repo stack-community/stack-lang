@@ -7,6 +7,8 @@ The powerful script language designed with a stack oriented approach for efficie
 
 ### If you don't want to install...
 
+**Launching Stack needs cargo!**
+
 ```bash
 git clone https://github.com/Stack-Programing-Community/Stack-Programing-Language.git
 cd Stack-Programing-Language

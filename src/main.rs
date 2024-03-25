@@ -335,6 +335,8 @@ impl Executor {
                 self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
             } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
                 // Push string value on the stack
+                self.stack
+                    .push(Type::String(token[1..token.len() - 1].to_string()));
                 let string = {
                     let mut buffer = String::new(); // Temporary storage
                     let mut brackets = 0; // String's nest structure
@@ -380,6 +382,12 @@ impl Executor {
                                             'r' => buffer.push_str("\\r"),
                                             _ => buffer.push(c),
                                         }
+                                        buffer.push(match c {
+                                            'n' => '\n',
+                                            't' => '\t',
+                                            'r' => '\r',
+                                            _ => c,
+                                        })
                                     } else {
                                         buffer.push(c);
                                     }
@@ -396,6 +404,8 @@ impl Executor {
                     buffer
                 };
                 self.stack.push(Type::String(string));
+                self.stack
+                    .push(Type::String(token[1..token.len() - 1].to_string()));
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
                 // Push list value on the stack
                 let old_len = self.stack.len(); // length of old stack
@@ -700,15 +710,10 @@ impl Executor {
             // Standard output
             "print" => {
                 let a = self.pop_stack().get_string();
-
-                let a = a.replace("\\n", "\n");
-                let a = a.replace("\\t", "\t");
-                let a = a.replace("\\r", "\r");
-
                 if let Mode::Debug = self.mode {
                     println!("[Output]: {a}");
                 } else {
-                    print!("{a}");
+                    println!("{a}");
                 }
             }
 
@@ -868,7 +873,6 @@ impl Executor {
                         return;
                     }
                 }
-
                 self.log_print(String::from("Error! item not found in the list\n"));
                 self.stack.push(Type::Error(String::from("item-not-found")));
             }
@@ -1378,8 +1382,25 @@ impl Executor {
                 })
             }
 
+            "cls" => {
+                self.clearscreen();
+            }
+
+            "clear" => {
+                self.clearscreen();
+            }
+
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
+        }
+    }
+
+    fn clearscreen(&mut self) {
+        let result = clearscreen::clear();
+        if result.is_err() {
+            println!("Error! Failed to clear screen");
+            self.stack
+                .push(Type::Error(String::from("failed-to-clear-screen")));
         }
     }
 
