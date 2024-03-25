@@ -1287,12 +1287,29 @@ impl Executor {
                         return;
                     }
                 }
-                self.log_print(String::from("Error! item not found in this list").as_str().to_owned() + "\n");
+                self.log_print("Error! item not found in this list".to_owned() + "\n");
                 self.stack.push(Type::Error(String::from("item-not-found")));
+            }
+
+            "cls" => {
+                self.clearscreen();
+            }
+
+            "clear" => {
+                self.clearscreen();
             }
 
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
+        }
+    }
+
+    fn clearscreen(&mut self) {
+        let result = clearscreen::clear();
+        if result.is_err() {
+            println!("Error! Failed to clear screen");
+            self.stack
+                .push(Type::Error(String::from("failed-to-clear-screen")));
         }
     }
 
