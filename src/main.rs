@@ -334,9 +334,7 @@ impl Executor {
                 // Push bool value on the stack
                 self.stack.push(Type::Bool(token.parse().unwrap_or(true)));
             } else if chars[0] == '(' && chars[chars.len() - 1] == ')' {
-                // Push string value on the stack
-                self.stack
-                    .push(Type::String(token[1..token.len() - 1].to_string()));
+                // Processing string escape
                 let string = {
                     let mut buffer = String::new(); // Temporary storage
                     let mut brackets = 0; // String's nest structure
@@ -382,12 +380,6 @@ impl Executor {
                                             'r' => buffer.push_str("\\r"),
                                             _ => buffer.push(c),
                                         }
-                                        buffer.push(match c {
-                                            'n' => '\n',
-                                            't' => '\t',
-                                            'r' => '\r',
-                                            _ => c,
-                                        })
                                     } else {
                                         buffer.push(c);
                                     }
@@ -402,10 +394,8 @@ impl Executor {
                         }
                     }
                     buffer
-                };
+                };// Push string value on the stack
                 self.stack.push(Type::String(string));
-                self.stack
-                    .push(Type::String(token[1..token.len() - 1].to_string()));
             } else if chars[0] == '[' && chars[chars.len() - 1] == ']' {
                 // Push list value on the stack
                 let old_len = self.stack.len(); // length of old stack
@@ -710,10 +700,15 @@ impl Executor {
             // Standard output
             "print" => {
                 let a = self.pop_stack().get_string();
+                
+                let a  = a.replace("\\n", "\n");
+                let a  = a.replace("\\t", "\t");
+                let a  = a.replace("\\r", "\r");
+                
                 if let Mode::Debug = self.mode {
                     println!("[Output]: {a}");
                 } else {
-                    println!("{a}");
+                    print!("{a}");
                 }
             }
 
