@@ -868,8 +868,12 @@ impl Executor {
                         return;
                     }
                 }
+<<<<<<< HEAD
 
                 self.log_print(String::from("Error! item not found in the list\n"));
+=======
+                self.log_print(String::from("Error! item not found in the list").as_str().to_owned() + "\n");
+>>>>>>> ce3cc7e (git)
                 self.stack.push(Type::Error(String::from("item-not-found")));
             }
 
@@ -1379,7 +1383,10 @@ impl Executor {
             }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> ce3cc7e (git)
             "index" => {
                 let findhint = self.pop_stack().get_string();
                 let findtarget = self.pop_stack().get_list();
@@ -1402,7 +1409,12 @@ impl Executor {
                 self.clearscreen();
             }
 
+<<<<<<< HEAD
 >>>>>>> 887510b (git)
+=======
+=======
+>>>>>>> 1d34bfe (Refactoring)
+>>>>>>> ce3cc7e (git)
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
