@@ -901,11 +901,15 @@ impl Executor {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> cdb5350 (git)
 
                 self.log_print(String::from("Error! item not found in the list\n"));
 =======
                 self.log_print(String::from("Error! item not found in the list").as_str().to_owned() + "\n");
 >>>>>>> ce3cc7e (git)
+<<<<<<< HEAD
 =======
                 
 =======
@@ -913,6 +917,8 @@ impl Executor {
 >>>>>>> 61ad1c1 (Format)
                 self.log_print(String::from("Error! item not found in the list\n"));
 >>>>>>> 0c174e6 (Update main.rs)
+=======
+>>>>>>> cdb5350 (git)
                 self.stack.push(Type::Error(String::from("item-not-found")));
             }
 
@@ -1424,6 +1430,7 @@ impl Executor {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 =======
 <<<<<<< HEAD
@@ -1434,6 +1441,11 @@ impl Executor {
 =======
 =======
 >>>>>>> 1843023 (git)
+=======
+=======
+=======
+>>>>>>> ce3cc7e (git)
+>>>>>>> cdb5350 (git)
             "index" => {
                 let findhint = self.pop_stack().get_string();
                 let findtarget = self.pop_stack().get_list();
@@ -1459,11 +1471,15 @@ impl Executor {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> cdb5350 (git)
 >>>>>>> 887510b (git)
 =======
 =======
 >>>>>>> 1d34bfe (Refactoring)
 >>>>>>> ce3cc7e (git)
+<<<<<<< HEAD
 =======
 =======
 >>>>>>> 1d34bfe (Refactoring)
@@ -1474,6 +1490,8 @@ impl Executor {
 =======
 >>>>>>> 887510b (git)
 >>>>>>> 1843023 (git)
+=======
+>>>>>>> cdb5350 (git)
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
