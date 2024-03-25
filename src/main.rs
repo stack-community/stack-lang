@@ -1444,8 +1444,15 @@ impl Executor {
 =======
 =======
 =======
+<<<<<<< HEAD
 >>>>>>> ce3cc7e (git)
+<<<<<<< HEAD
 >>>>>>> cdb5350 (git)
+=======
+=======
+>>>>>>> ce80cb2 (git)
+>>>>>>> 74bbfe3 (git)
+>>>>>>> e1b0d54 (git)
             "index" => {
                 let findhint = self.pop_stack().get_string();
                 let findtarget = self.pop_stack().get_list();
@@ -1472,14 +1479,20 @@ impl Executor {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> cdb5350 (git)
+=======
+>>>>>>> e1b0d54 (git)
 >>>>>>> 887510b (git)
 =======
 =======
 >>>>>>> 1d34bfe (Refactoring)
 >>>>>>> ce3cc7e (git)
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e1b0d54 (git)
 =======
 =======
 >>>>>>> 1d34bfe (Refactoring)
@@ -1487,11 +1500,14 @@ impl Executor {
 >>>>>>> 887510b (git)
 >>>>>>> ce80cb2 (git)
 >>>>>>> 74bbfe3 (git)
+<<<<<<< HEAD
 =======
 >>>>>>> 887510b (git)
 >>>>>>> 1843023 (git)
 =======
 >>>>>>> cdb5350 (git)
+=======
+>>>>>>> e1b0d54 (git)
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
         }
