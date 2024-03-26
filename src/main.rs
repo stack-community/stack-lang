@@ -33,7 +33,7 @@ fn main() {
     if let Some(script) = matches.value_of("script") {
         if matches.is_present("debug") {
             let mut stack = Executor::new(Mode::Debug);
-            stack.evaluate_program(match get_file_contents(script.to_string()) {
+            stack.evaluate_program(match get_file_contents(Path::new(&script.to_string())) {
                 Ok(code) => code,
                 Err(err) => {
                     println!("Error! {err}");
@@ -42,7 +42,7 @@ fn main() {
             })
         } else {
             let mut stack = Executor::new(Mode::Script);
-            stack.evaluate_program(match get_file_contents(script.to_string()) {
+            stack.evaluate_program(match get_file_contents(Path::new(&script.to_string())) {
                 Ok(code) => code,
                 Err(err) => {
                     println!("Error! {err}");
@@ -71,8 +71,8 @@ fn main() {
 }
 
 /// Read string of the file
-fn get_file_contents(name: String) -> Result<String, Error> {
-    let mut f = File::open(name.trim())?;
+fn get_file_contents(name: &Path) -> Result<String, Error> {
+    let mut f = File::open(name)?;
     let mut contents = String::new();
     f.read_to_string(&mut contents)?;
     Ok(contents)
@@ -665,7 +665,7 @@ impl Executor {
 
             // Write string in the file
             "write-file" => {
-                let mut file = match File::create(self.pop_stack().get_string()) {
+                let mut file = match File::create(Path::new(&self.pop_stack().get_string())) {
                     Ok(file) => file,
                     Err(e) => {
                         self.log_print(format!("Error! {e}\n"));
@@ -681,8 +681,8 @@ impl Executor {
 
             // Read string in the file
             "read-file" => {
-                let name = self.pop_stack().get_string();
-                match get_file_contents(name) {
+                let name = Path::new(&self.pop_stack().get_string()).to_owned();
+                match get_file_contents(&name) {
                     Ok(s) => self.stack.push(Type::String(s)),
                     Err(e) => {
                         self.log_print(format!("Error! {}\n", e));
