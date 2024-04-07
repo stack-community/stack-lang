@@ -711,6 +711,21 @@ impl Executor {
                     print!("{a}");
                 }
             }
+            
+            // Standard output with new line
+            "println" => {
+                let a = self.pop_stack().get_string();
+
+                let a = a.replace("\\n", "\n");
+                let a = a.replace("\\t", "\t");
+                let a = a.replace("\\r", "\r");
+
+                if let Mode::Debug = self.mode {
+                    println!("[Output]: {a}");
+                } else {
+                    println!("{a}");
+                }
+            }
 
             // Get command-line arguments
             "args-cmd" => self.stack.push(Type::List(
