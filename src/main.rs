@@ -711,7 +711,7 @@ impl Executor {
                     print!("{a}");
                 }
             }
-            
+
             // Standard output with new line
             "println" => {
                 let a = self.pop_stack().get_string();
@@ -767,6 +767,16 @@ impl Executor {
                 let frequency = self.pop_stack().get_number();
 
                 play_sine_wave(frequency, duration_secs);
+            }
+
+            // Claer the console screen
+            "cls" | "clear" => {
+                let result = clearscreen::clear();
+                if result.is_err() {
+                    println!("Error! Failed to clear screen");
+                    self.stack
+                        .push(Type::Error(String::from("failed-to-clear-screen")));
+                }
             }
 
             // Commands of control
@@ -925,6 +935,29 @@ impl Executor {
                 });
             }
 
+            // Generate a range
+            "range" => {
+                let step = self.pop_stack().get_number();
+                let max = self.pop_stack().get_number();
+                let min = self.pop_stack().get_number();
+
+                let mut range: Vec<Type> = Vec::new();
+
+                for i in (min as usize..max as usize).step_by(step as usize) {
+                    range.push(Type::Number(i as f64));
+                }
+
+                self.stack.push(Type::List(range));
+            }
+
+            // Get length of list
+            "len" => {
+                let data = self.pop_stack().get_list();
+                self.stack.push(Type::Number(data.len() as f64));
+            }
+
+            // Commands of functional programming
+
             // Mapping a list
             "map" => {
                 let code = self.pop_stack().get_string();
@@ -1003,27 +1036,6 @@ impl Executor {
                     .entry(acc.clone())
                     .and_modify(|value| *value = Type::String("".to_string()))
                     .or_insert(Type::String("".to_string()));
-            }
-
-            // Generate a range
-            "range" => {
-                let step = self.pop_stack().get_number();
-                let max = self.pop_stack().get_number();
-                let min = self.pop_stack().get_number();
-
-                let mut range: Vec<Type> = Vec::new();
-
-                for i in (min as usize..max as usize).step_by(step as usize) {
-                    range.push(Type::Number(i as f64));
-                }
-
-                self.stack.push(Type::List(range));
-            }
-
-            // Get length of list
-            "len" => {
-                let data = self.pop_stack().get_list();
-                self.stack.push(Type::Number(data.len() as f64));
             }
 
             // Commands of memory manage
@@ -1386,25 +1398,8 @@ impl Executor {
                 })
             }
 
-            "cls" => {
-                self.clearscreen();
-            }
-
-            "clear" => {
-                self.clearscreen();
-            }
-
             // If it is not recognized as a command, use it as a string.
             _ => self.stack.push(Type::String(command)),
-        }
-    }
-
-    fn clearscreen(&mut self) {
-        let result = clearscreen::clear();
-        if result.is_err() {
-            println!("Error! Failed to clear screen");
-            self.stack
-                .push(Type::Error(String::from("failed-to-clear-screen")));
         }
     }
 
