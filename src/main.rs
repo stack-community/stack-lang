@@ -433,7 +433,7 @@ impl Executor {
         match command.as_str() {
             // Commands of calculation
 
-            // addition
+            // Addition
             "add" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
@@ -519,14 +519,14 @@ impl Executor {
                 self.stack.push(Type::Bool(!b));
             }
 
-            // Is it equal
+            // Judge is it equal
             "equal" => {
                 let b = self.pop_stack().get_string();
                 let a = self.pop_stack().get_string();
                 self.stack.push(Type::Bool(a == b));
             }
 
-            // Is it less
+            // Judge is it less
             "less" => {
                 let b = self.pop_stack().get_number();
                 let a = self.pop_stack().get_number();
@@ -554,8 +554,8 @@ impl Executor {
 
             // Repeat string a number of times
             "repeat" => {
-                let count = self.pop_stack().get_number(); // 回数
-                let text = self.pop_stack().get_string(); // 文字列
+                let count = self.pop_stack().get_number(); // Count
+                let text = self.pop_stack().get_string(); // String
                 self.stack.push(Type::String(text.repeat(count as usize)));
             }
 
@@ -598,7 +598,7 @@ impl Executor {
                 self.stack.push(Type::String(text.replace(&before, &after)))
             }
 
-            // split string by key
+            // Split string by the key
             "split" => {
                 let key = self.pop_stack().get_string();
                 let text = self.pop_stack().get_string();
@@ -633,7 +633,7 @@ impl Executor {
                 ))
             }
 
-            // Is it finding in string
+            // Judge is it find in string
             "find" => {
                 let word = self.pop_stack().get_string();
                 let text = self.pop_stack().get_string();
@@ -781,7 +781,7 @@ impl Executor {
 
             // Commands of control
 
-            // evaluate string as program
+            // Evaluate string as program
             "eval" => {
                 let code = self.pop_stack().get_string();
                 self.evaluate_program(code)
@@ -789,9 +789,9 @@ impl Executor {
 
             // Conditional branch
             "if" => {
-                let condition = self.pop_stack().get_bool(); // condition
-                let code_else = self.pop_stack().get_string(); // else code
-                let code_if = self.pop_stack().get_string(); // if code
+                let condition = self.pop_stack().get_bool(); // Condition
+                let code_else = self.pop_stack().get_string(); // Code of else
+                let code_if = self.pop_stack().get_string(); // Code of If
                 if condition {
                     self.evaluate_program(code_if)
                 } else {
@@ -818,7 +818,7 @@ impl Executor {
                 thread::spawn(move || executor.evaluate_program(code));
             }
 
-            // exit a process
+            // Exit a process
             "exit" => {
                 let status = self.pop_stack().get_number();
                 std::process::exit(status as i32);
@@ -884,11 +884,11 @@ impl Executor {
 
             // Get index of the list
             "index" => {
-                let findhint = self.pop_stack().get_string();
-                let findtarget = self.pop_stack().get_list();
+                let target = self.pop_stack().get_string();
+                let list = self.pop_stack().get_list();
 
-                for index in 0..(findtarget.len()) {
-                    if findhint == findtarget[index].clone().get_string() {
+                for (index, item) in list.iter().enumerate() {
+                    if target == item.clone().get_string() {
                         self.stack.push(Type::Number(index as f64));
                         return;
                     }
@@ -920,7 +920,7 @@ impl Executor {
                 self.stack.push(Type::List(list));
             }
 
-            // Iteration
+            // Iteration for the list
             "for" => {
                 let code = self.pop_stack().get_string();
                 let vars = self.pop_stack().get_string();
@@ -1040,7 +1040,7 @@ impl Executor {
 
             // Commands of memory manage
 
-            // pop in the stack
+            // Pop in the stack
             "pop" => {
                 self.pop_stack();
             }
@@ -1159,7 +1159,7 @@ impl Executor {
                         let element = match data.get(index) {
                             Some(value) => value,
                             None => {
-                                self.log_print(format!("Error! initial data is shortage\n"));
+                                self.log_print("Error! initial data is shortage\n".to_string());
                                 self.stack
                                     .push(Type::Error("instance-shortage".to_string()));
                                 return;
