@@ -1,10 +1,10 @@
 use clap::{App, Arg};
+use clipboard::{ClipboardContext, ClipboardProvider};
 use rand::seq::SliceRandom;
 use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
 use std::collections::HashMap;
 use std::env;
-use clipboard::{ClipboardContext, ClipboardProvider};
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
 use std::path::Path;
@@ -17,7 +17,7 @@ mod test;
 
 fn main() {
     let matches = App::new("Stack")
-        .version("1.11")
+        .version("1.12")
         .author("Stack Programming Community")
         .about("The powerful script language designed with a stack oriented approach for efficient execution. ")
         .arg(Arg::new("script")
@@ -1406,14 +1406,14 @@ impl Executor {
                     ctx = i
                 } else {
                     self.stack.push(Type::Error("set-clipboard".to_string()));
-                    return
+                    return;
                 };
-                
+
                 let value = self.pop_stack().get_string();
                 if ctx.set_contents(value.clone()).is_ok() {
                     self.stack.push(Type::String(value));
                 } else {
-                    self.stack.push(Type::Error("get-clipboard".to_string()))
+                    self.stack.push(Type::Error("set-clipboard".to_string()))
                 };
             }
 
@@ -1423,10 +1423,9 @@ impl Executor {
                 if let Ok(i) = ClipboardProvider::new() {
                     ctx = i
                 } else {
-                    self.stack.push(Type::Error("set-clipboard".to_string()));
-                    return
+                    self.stack.push(Type::Error("get-clipboard".to_string()));
+                    return;
                 };
-
 
                 if let Ok(contents) = ctx.get_contents() {
                     self.stack.push(Type::String(contents));
