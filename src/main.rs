@@ -4,6 +4,7 @@ use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
 use std::collections::HashMap;
 use std::env;
+use clipboard::{ClipboardContext, ClipboardProvider};
 use std::fs::{self, File};
 use std::io::{self, Error, Read, Write};
 use std::path::Path;
@@ -1396,6 +1397,42 @@ impl Executor {
                     },
                     _ => Type::Error("sys-info".to_string()),
                 })
+            }
+
+            // Set value in the clipboard
+            "set-clipboard" => {
+                let mut ctx: ClipboardContext;
+                if let Ok(i) = ClipboardProvider::new() {
+                    ctx = i
+                } else {
+                    self.stack.push(Type::Error("set-clipboard".to_string()));
+                    return
+                };
+                
+                let value = self.pop_stack().get_string();
+                if ctx.set_contents(value.clone()).is_ok() {
+                    self.stack.push(Type::String(value));
+                } else {
+                    self.stack.push(Type::Error("get-clipboard".to_string()))
+                };
+            }
+
+            // Get value in the clipboard
+            "get-clipboard" => {
+                let mut ctx: ClipboardContext;
+                if let Ok(i) = ClipboardProvider::new() {
+                    ctx = i
+                } else {
+                    self.stack.push(Type::Error("set-clipboard".to_string()));
+                    return
+                };
+
+
+                if let Ok(contents) = ctx.get_contents() {
+                    self.stack.push(Type::String(contents));
+                } else {
+                    self.stack.push(Type::Error("get-clipboard".to_string()))
+                }
             }
 
             // If it is not recognized as a command, use it as a string.
