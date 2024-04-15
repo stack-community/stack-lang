@@ -3,6 +3,7 @@ use clipboard::{ClipboardContext, ClipboardProvider};
 use rand::seq::SliceRandom;
 use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
+use rusty_audio::Audio;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
@@ -1432,6 +1433,24 @@ impl Executor {
                 } else {
                     self.stack.push(Type::Error("get-clipboard".to_string()))
                 }
+            }
+
+            "play-file" => {
+                let path_as_str = self.pop_stack().get_string();
+                let soundfilepath = Path::new(&path_as_str);
+
+                let ressoundfile = File::open(soundfilepath);
+                if let Err(e) = ressoundfile {
+                    self.log_print(format!("Error! {}\n", e));
+                    self.stack.push(Type::Error("play-file".to_string()));
+                    return;
+                }
+
+                let mut audiodevice = Audio::new();
+                audiodevice.add("sound", path_as_str);
+                audiodevice.play("sound");
+
+                audiodevice.wait();
             }
 
             // If it is not recognized as a command, use it as a string.
