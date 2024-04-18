@@ -771,6 +771,25 @@ impl Executor {
                 play_sine_wave(frequency, duration_secs);
             }
 
+            // Play the music file
+            "play-file" => {
+                let path = self.pop_stack().get_string();
+                let sound_file_path = Path::new(&path);
+
+                let res_sound_file = File::open(sound_file_path);
+                if let Err(e) = res_sound_file {
+                    self.log_print(format!("Error! {}\n", e));
+                    self.stack.push(Type::Error("play-file".to_string()));
+                } else {
+                    let mut audio_device = Audio::new();
+                    audio_device.add("sound", path.clone());
+                    audio_device.play("sound");
+                    audio_device.wait();
+
+                    self.stack.push(Type::String(path));
+                }
+            }
+
             // Claer the console screen
             "cls" | "clear" => {
                 let result = clearscreen::clear();
@@ -1433,24 +1452,6 @@ impl Executor {
                 } else {
                     self.stack.push(Type::Error("get-clipboard".to_string()))
                 }
-            }
-
-            "play-file" => {
-                let path_as_str = self.pop_stack().get_string();
-                let soundfilepath = Path::new(&path_as_str);
-
-                let ressoundfile = File::open(soundfilepath);
-                if let Err(e) = ressoundfile {
-                    self.log_print(format!("Error! {}\n", e));
-                    self.stack.push(Type::Error("play-file".to_string()));
-                    return;
-                }
-
-                let mut audiodevice = Audio::new();
-                audiodevice.add("sound", path_as_str);
-                audiodevice.play("sound");
-
-                audiodevice.wait();
             }
 
             // If it is not recognized as a command, use it as a string.
