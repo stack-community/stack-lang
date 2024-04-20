@@ -4,6 +4,7 @@ use rand::seq::SliceRandom;
 use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
 use rusty_audio::Audio;
+use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
@@ -777,16 +778,17 @@ impl Executor {
                 let sound_file_path = Path::new(&path);
 
                 let res_sound_file = File::open(sound_file_path);
+
+                self.stack.push(Type::String(path.clone()));
+
                 if let Err(e) = res_sound_file {
                     self.log_print(format!("Error! {}\n", e));
                     self.stack.push(Type::Error("play-file".to_string()));
                 } else {
                     let mut audio_device = Audio::new();
-                    audio_device.add("sound", path.clone());
+                    audio_device.add("sound", path);
                     audio_device.play("sound");
                     audio_device.wait();
-
-                    self.stack.push(Type::String(path));
                 }
             }
 
@@ -1070,6 +1072,17 @@ impl Executor {
             "size-stack" => {
                 let len: f64 = self.stack.len() as f64;
                 self.stack.push(Type::Number(len));
+            }
+
+            // Get Stack as List
+            "get-stack" => {
+                self.stack.push(Type::List(self.stack.clone()));
+            }
+
+            // Set Stack by List
+            "set-stack" => {
+                let stack = self.pop_stack().get_list();
+                self.stack = stack;
             }
 
             // Define variable at memory
