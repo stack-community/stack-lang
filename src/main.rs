@@ -787,7 +787,7 @@ impl Executor {
                     audio_device.play("sound");
                     audio_device.wait();
                     
-                    self.stack.push(Type::String(path.clone()));
+                    self.stack.push(Type::String(path));
                 }
             }
 
