@@ -4,7 +4,6 @@ use rand::seq::SliceRandom;
 use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
 use rusty_audio::Audio;
-use std::borrow::Borrow;
 use std::collections::HashMap;
 use std::env;
 use std::fs::{self, File};
