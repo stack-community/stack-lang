@@ -1027,13 +1027,14 @@ impl Executor {
             "reduce" => {
                 let code = self.pop_stack().get_string();
                 let now = self.pop_stack().get_string();
+                let accinit = self.pop_stack();
                 let acc = self.pop_stack().get_string();
                 let list = self.pop_stack().get_list();
 
                 self.memory
                     .entry(acc.clone())
-                    .and_modify(|value| *value = Type::String("".to_string()))
-                    .or_insert(Type::String("".to_string()));
+                    .and_modify(|value| *value = accinit.clone())
+                    .or_insert(accinit);
 
                 for x in list.iter() {
                     self.memory
