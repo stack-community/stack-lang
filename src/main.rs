@@ -1079,12 +1079,6 @@ impl Executor {
                 self.stack.push(Type::List(self.stack.clone()));
             }
 
-            // Set Stack by List
-            "set-stack" => {
-                let stack = self.pop_stack().get_list();
-                self.stack = stack;
-            }
-
             // Define variable at memory
             "var" => {
                 let name = self.pop_stack().get_string();
