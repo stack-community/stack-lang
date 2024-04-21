@@ -778,8 +778,6 @@ impl Executor {
 
                 let res_sound_file = File::open(sound_file_path);
 
-                self.stack.push(Type::String(path.clone()));
-
                 if let Err(e) = res_sound_file {
                     self.log_print(format!("Error! {}\n", e));
                     self.stack.push(Type::Error("play-file".to_string()));
@@ -788,6 +786,8 @@ impl Executor {
                     audio_device.add("sound", path);
                     audio_device.play("sound");
                     audio_device.wait();
+                    
+                    self.stack.push(Type::String(path.clone()));
                 }
             }
 
@@ -1027,14 +1027,14 @@ impl Executor {
             "reduce" => {
                 let code = self.pop_stack().get_string();
                 let now = self.pop_stack().get_string();
-                let accinit = self.pop_stack();
+                let init = self.pop_stack();
                 let acc = self.pop_stack().get_string();
                 let list = self.pop_stack().get_list();
 
                 self.memory
                     .entry(acc.clone())
-                    .and_modify(|value| *value = accinit.clone())
-                    .or_insert(accinit);
+                    .and_modify(|value| *value = init.clone())
+                    .or_insert(init);
 
                 for x in list.iter() {
                     self.memory
