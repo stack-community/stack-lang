@@ -100,3 +100,29 @@ fn control_while() {
         10f64
     );
 }
+
+#[test]
+fn equal_true() {
+    let mut executor = Executor::new(Mode::Script);
+
+    assert_eq!(
+        {
+            executor.evaluate_program("1 1 add 2 equal".to_string());
+            executor.pop_stack().get_bool()
+        },
+        true
+    );
+}
+
+#[test]
+fn equal_false() {
+    let mut executor = Executor::new(Mode::Script);
+
+    assert_eq!(
+        {
+            executor.evaluate_program("1 1 mul 999 equal".to_string());
+            executor.pop_stack().get_bool()
+        },
+        false
+    );
+}

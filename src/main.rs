@@ -17,8 +17,8 @@ use sys_info::{cpu_num, cpu_speed, hostname, mem_info, os_release, os_type};
 mod test;
 
 fn main() {
-    let matches = App::new("Stack")
-        .version("1.12")
+    let app = App::new("Stack")
+        .version("1.12.0")
         .author("Stack Programming Community")
         .about("The powerful script language designed with a stack oriented approach for efficient execution. ")
         .arg(Arg::new("script")
@@ -29,7 +29,8 @@ fn main() {
         .arg(Arg::new("debug")
             .short('d')
             .long("debug")
-            .help("Enables debug mode"))
+            .help("Enables debug mode"));
+    let matches = app.clone()
         .get_matches();
 
     if let Some(script) = matches.value_of("script") {
@@ -55,6 +56,7 @@ fn main() {
     } else {
         // Show a title
         println!("Stack Programming Language");
+        println!("Version {}",  {app.get_version().unwrap_or("unknown")});
         let mut executor = Executor::new(Mode::Debug);
         // REPL Execution
         loop {
