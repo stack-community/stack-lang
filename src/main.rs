@@ -783,7 +783,7 @@ impl Executor {
                     self.stack.push(Type::Error("play-file".to_string()));
                 } else {
                     let mut audio_device = Audio::new();
-                    audio_device.add("sound", path);
+                    audio_device.add("sound", path.clone());
                     audio_device.play("sound");
                     audio_device.wait();
                     
