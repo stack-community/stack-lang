@@ -5,15 +5,15 @@ use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
 use rusty_audio::Audio;
 use std::collections::HashMap;
-use std::{env, fs};
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::thread::{self, sleep};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::{env, fs};
 use sys_info::{cpu_num, cpu_speed, hostname, mem_info, os_release, os_type};
 
-pub fn execute_command(&mut executor: &Executor, command: String) {
+pub fn execute_command(executor: &mut Executor, command: String) {
     match command.as_str() {
         // Commands of calculation
 
@@ -140,7 +140,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
         "repeat" => {
             let count = executor.pop_stack().get_number(); // Count
             let text = executor.pop_stack().get_string(); // String
-            executor.stack.push(Type::String(text.repeat(count as usize)));
+            executor
+                .stack
+                .push(Type::String(text.repeat(count as usize)));
         }
 
         // Get unicode character form number
@@ -151,7 +153,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 Some(c) => executor.stack.push(Type::String(c.to_string())),
                 None => {
                     executor.log_print("Error! failed of number decoding\n".to_string());
-                    executor.stack.push(Type::Error("number-decoding".to_string()));
+                    executor
+                        .stack
+                        .push(Type::Error("number-decoding".to_string()));
                 }
             }
         }
@@ -160,10 +164,14 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
         "encode" => {
             let string = executor.pop_stack().get_string();
             if let Some(first_char) = string.chars().next() {
-                executor.stack.push(Type::Number((first_char as u32) as f64));
+                executor
+                    .stack
+                    .push(Type::Number((first_char as u32) as f64));
             } else {
                 executor.log_print("Error! failed of string encoding\n".to_string());
-                executor.stack.push(Type::Error("string-encoding".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("string-encoding".to_string()));
             }
         }
 
@@ -179,7 +187,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             let after = executor.pop_stack().get_string();
             let before = executor.pop_stack().get_string();
             let text = executor.pop_stack().get_string();
-            executor.stack.push(Type::String(text.replace(&before, &after)))
+            executor
+                .stack
+                .push(Type::String(text.replace(&before, &after)))
         }
 
         // Split string by the key
@@ -368,7 +378,7 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 audio_device.add("sound", path.clone());
                 audio_device.play("sound");
                 audio_device.wait();
-                
+
                 executor.stack.push(Type::String(path));
             }
         }
@@ -378,7 +388,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             let result = clearscreen::clear();
             if result.is_err() {
                 println!("Error! Failed to clear screen");
-                executor.stack
+                executor
+                    .stack
                     .push(Type::Error(String::from("failed-to-clear-screen")));
             }
         }
@@ -438,7 +449,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 executor.stack.push(list[index].clone());
             } else {
                 executor.log_print("Error! Index specification is out of range\n".to_string());
-                executor.stack.push(Type::Error("index-out-range".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("index-out-range".to_string()));
             }
         }
 
@@ -452,7 +465,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 executor.stack.push(Type::List(list));
             } else {
                 executor.log_print("Error! Index specification is out of range\n".to_string());
-                executor.stack.push(Type::Error("index-out-range".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("index-out-range".to_string()));
             }
         }
 
@@ -465,7 +480,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 executor.stack.push(Type::List(list));
             } else {
                 executor.log_print("Error! Index specification is out of range\n".to_string());
-                executor.stack.push(Type::Error("index-out-range".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("index-out-range".to_string()));
             }
         }
 
@@ -498,7 +515,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 }
             }
             executor.log_print(String::from("Error! item not found in the list\n"));
-            executor.stack.push(Type::Error(String::from("item-not-found")));
+            executor
+                .stack
+                .push(Type::Error(String::from("item-not-found")));
         }
 
         // Sorting in the list
@@ -531,7 +550,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             let list = executor.pop_stack().get_list();
 
             list.iter().for_each(|x| {
-                executor.memory
+                executor
+                    .memory
                     .entry(vars.clone())
                     .and_modify(|value| *value = x.clone())
                     .or_insert(x.clone());
@@ -570,7 +590,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
 
             let mut result_list = Vec::new();
             for x in list.iter() {
-                executor.memory
+                executor
+                    .memory
                     .entry(vars.clone())
                     .and_modify(|value| *value = x.clone())
                     .or_insert(x.clone());
@@ -591,7 +612,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             let mut result_list = Vec::new();
 
             for x in list.iter() {
-                executor.memory
+                executor
+                    .memory
                     .entry(vars.clone())
                     .and_modify(|value| *value = x.clone())
                     .or_insert(x.clone());
@@ -613,13 +635,15 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             let acc = executor.pop_stack().get_string();
             let list = executor.pop_stack().get_list();
 
-            executor.memory
+            executor
+                .memory
                 .entry(acc.clone())
                 .and_modify(|value| *value = init.clone())
                 .or_insert(init);
 
             for x in list.iter() {
-                executor.memory
+                executor
+                    .memory
                     .entry(now.clone())
                     .and_modify(|value| *value = x.clone())
                     .or_insert(x.clone());
@@ -627,17 +651,20 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 executor.evaluate_program(code.clone());
                 let result = executor.pop_stack();
 
-                executor.memory
+                executor
+                    .memory
                     .entry(acc.clone())
                     .and_modify(|value| *value = result.clone())
                     .or_insert(result);
             }
 
             let result = executor.memory.get(&acc);
-            executor.stack
+            executor
+                .stack
                 .push(result.unwrap_or(&Type::String("".to_string())).clone());
 
-            executor.memory
+            executor
+                .memory
                 .entry(acc.clone())
                 .and_modify(|value| *value = Type::String("".to_string()))
                 .or_insert(Type::String("".to_string()));
@@ -665,7 +692,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
         "var" => {
             let name = executor.pop_stack().get_string();
             let data = executor.pop_stack();
-            executor.memory
+            executor
+                .memory
                 .entry(name)
                 .and_modify(|value| *value = data.clone())
                 .or_insert(data);
@@ -758,7 +786,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                 class[0].get_string()
             } else {
                 executor.log_print("Error! the type name is not found.".to_string());
-                executor.stack.push(Type::Error("instance-name".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("instance-name".to_string()));
                 return;
             };
 
@@ -770,7 +800,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                         Some(value) => value,
                         None => {
                             executor.log_print("Error! initial data is shortage\n".to_string());
-                            executor.stack
+                            executor
+                                .stack
                                 .push(Type::Error("instance-shortage".to_string()));
                             return;
                         }
@@ -785,7 +816,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
                     object.insert(item[0].clone().get_string(), item[1].clone());
                 } else {
                     executor.log_print("Error! the class data structure is wrong.".to_string());
-                    executor.stack.push(Type::Error("instance-default".to_string()));
+                    executor
+                        .stack
+                        .push(Type::Error("instance-default".to_string()));
                 }
             }
 
@@ -811,7 +844,8 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             match executor.pop_stack() {
                 Type::Object(name, value) => {
                     let data = Type::Object(name, value.clone());
-                    executor.memory
+                    executor
+                        .memory
                         .entry("executor".to_string())
                         .and_modify(|value| *value = data.clone())
                         .or_insert(data);
@@ -1014,7 +1048,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             if let Ok(i) = ClipboardProvider::new() {
                 ctx = i
             } else {
-                executor.stack.push(Type::Error("set-clipboard".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("set-clipboard".to_string()));
                 return;
             };
 
@@ -1022,7 +1058,9 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             if ctx.set_contents(value.clone()).is_ok() {
                 executor.stack.push(Type::String(value));
             } else {
-                executor.stack.push(Type::Error("set-clipboard".to_string()))
+                executor
+                    .stack
+                    .push(Type::Error("set-clipboard".to_string()))
             };
         }
 
@@ -1032,14 +1070,18 @@ pub fn execute_command(&mut executor: &Executor, command: String) {
             if let Ok(i) = ClipboardProvider::new() {
                 ctx = i
             } else {
-                executor.stack.push(Type::Error("get-clipboard".to_string()));
+                executor
+                    .stack
+                    .push(Type::Error("get-clipboard".to_string()));
                 return;
             };
 
             if let Ok(contents) = ctx.get_contents() {
                 executor.stack.push(Type::String(contents));
             } else {
-                executor.stack.push(Type::Error("get-clipboard".to_string()))
+                executor
+                    .stack
+                    .push(Type::Error("get-clipboard".to_string()))
             }
         }
 

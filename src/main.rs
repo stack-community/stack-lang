@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 use std::collections::HashMap;
-use std::fs::{File};
+use std::fs::File;
 use std::io::{self, Error, Read, Write};
 use std::path::Path;
 mod functions;
@@ -22,8 +22,7 @@ fn main() {
             .short('d')
             .long("debug")
             .help("Enables debug mode"));
-    let matches = app.clone()
-        .get_matches();
+    let matches = app.clone().get_matches();
 
     if let Some(script) = matches.value_of("script") {
         if matches.is_present("debug") {
@@ -48,7 +47,7 @@ fn main() {
     } else {
         // Show a title
         println!("Stack Programming Language");
-        println!("Version {}",  {app.get_version().unwrap_or("unknown")});
+        println!("Version {}", { app.get_version().unwrap_or("unknown") });
         let mut executor = Executor::new(Mode::Debug);
         // REPL Execution
         loop {
