@@ -5,10 +5,11 @@ use regex::Regex;
 use rodio::{OutputStream, Sink, Source};
 use rusty_audio::Audio;
 use std::collections::HashMap;
+use std::thread;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
-use std::thread::{self, sleep};
+use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use std::{env, fs};
 use sys_info::{cpu_num, cpu_speed, hostname, mem_info, os_release, os_type};
@@ -778,15 +779,15 @@ pub fn execute_command(executor: &mut Executor, command: String) {
 
         // Generate a instance of object
         "instance" => {
-            let data = self.pop_stack().get_list();
-            let class = self.pop_stack().get_list();
+            let data = executor.pop_stack().get_list();
+            let mut class = executor.pop_stack().get_list();
             let mut object: HashMap<String, Type> = HashMap::new();
 
             let name = if !class.is_empty() {
                 class[0].get_string()
             } else {
-                self.log_print("Error! the type name is not found.".to_string());
-                self.stack.push(Type::Error("instance-name".to_string()));
+                executor.log_print("Error! the type name is not found.".to_string());
+                executor.stack.push(Type::Error("instance-name".to_string()));
                 return;
             };
 
@@ -797,8 +798,8 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                     let element = match data.get(index) {
                         Some(value) => value,
                         None => {
-                            self.log_print("Error! initial data is shortage\n".to_string());
-                            self.stack
+                            executor.log_print("Error! initial data is shortage\n".to_string());
+                            executor.stack
                                 .push(Type::Error("instance-shortage".to_string()));
                             return;
                         }
@@ -812,19 +813,19 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                     let item = item.get_list();
                     object.insert(item[0].clone().get_string(), item[1].clone());
                 } else {
-                    self.log_print("Error! the class data structure is wrong.".to_string());
-                    self.stack.push(Type::Error("instance-default".to_string()));
+                    executor.log_print("Error! the class data structure is wrong.".to_string());
+                    executor.stack.push(Type::Error("instance-default".to_string()));
                 }
             }
 
-            self.stack.push(Type::Object(name, object))
+            executor.stack.push(Type::Object(name, object))
         }
 
         // Get property of object
         "property" => {
-            let name = self.pop_stack().get_string();
-            let (_, object) = self.pop_stack().get_object();
-            self.stack.push(
+            let name = executor.pop_stack().get_string();
+            let (_, object) = executor.pop_stack().get_object();
+            executor.stack.push(
                 object
                     .get(name.as_str())
                     .unwrap_or(&Type::Error("property".to_string()))
@@ -834,10 +835,10 @@ pub fn execute_command(executor: &mut Executor, command: String) {
 
         // Call the method of object
         "method" => {
-            let method = self.pop_stack().get_string();
-            let (name, value) = self.pop_stack().get_object();
+            let method = executor.pop_stack().get_string();
+            let (name, value) = executor.pop_stack().get_object();
             let data = Type::Object(name, value.clone());
-            self.memory
+            executor.memory
                 .entry("self".to_string())
                 .and_modify(|value| *value = data.clone())
                 .or_insert(data);
@@ -847,26 +848,26 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                 None => "".to_string(),
             };
 
-            self.evaluate_program(program);
+            executor.evaluate_program(program);
         }
 
         // Modify the property of object
         "modify" => {
-            let data = self.pop_stack();
-            let property = self.pop_stack().get_string();
-            let (name, mut value) = self.pop_stack().get_object();
+            let data = executor.pop_stack();
+            let property = executor.pop_stack().get_string();
+            let (name, mut value) = executor.pop_stack().get_object();
             value
                 .entry(property)
                 .and_modify(|value| *value = data.clone())
                 .or_insert(data.clone());
 
-            self.stack.push(Type::Object(name, value))
+            executor.stack.push(Type::Object(name, value))
         }
 
         // Get all of properties
         "all" => {
-            let (_, value) = self.pop_stack().get_object();
-            self.stack.push(Type::List(
+            let (_, value) = executor.pop_stack().get_object();
+            executor.stack.push(Type::List(
                 value
                     .keys()
                     .map(|x| Type::String(x.to_owned()))
