@@ -178,6 +178,13 @@ impl Type {
             Type::Object(_, object) => object.values().map(|x| x.to_owned()).collect::<Vec<Type>>(),
         }
     }
+
+    fn get_object(&self) -> (String, HashMap<String, Type>) {
+        match self {
+            Type::Object(name, value) => (name.to_owned(), value.to_owned()),
+            _ => ("".to_string(), HashMap::new()),
+        }
+    }
 }
 
 /// Manage program execution

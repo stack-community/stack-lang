@@ -778,17 +778,15 @@ pub fn execute_command(executor: &mut Executor, command: String) {
 
         // Generate a instance of object
         "instance" => {
-            let data = executor.pop_stack().get_list();
-            let mut class = executor.pop_stack().get_list();
+            let data = self.pop_stack().get_list();
+            let class = self.pop_stack().get_list();
             let mut object: HashMap<String, Type> = HashMap::new();
 
             let name = if !class.is_empty() {
                 class[0].get_string()
             } else {
-                executor.log_print("Error! the type name is not found.".to_string());
-                executor
-                    .stack
-                    .push(Type::Error("instance-name".to_string()));
+                self.log_print("Error! the type name is not found.".to_string());
+                self.stack.push(Type::Error("instance-name".to_string()));
                 return;
             };
 
@@ -799,9 +797,8 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                     let element = match data.get(index) {
                         Some(value) => value,
                         None => {
-                            executor.log_print("Error! initial data is shortage\n".to_string());
-                            executor
-                                .stack
+                            self.log_print("Error! initial data is shortage\n".to_string());
+                            self.stack
                                 .push(Type::Error("instance-shortage".to_string()));
                             return;
                         }
@@ -815,78 +812,67 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                     let item = item.get_list();
                     object.insert(item[0].clone().get_string(), item[1].clone());
                 } else {
-                    executor.log_print("Error! the class data structure is wrong.".to_string());
-                    executor
-                        .stack
-                        .push(Type::Error("instance-default".to_string()));
+                    self.log_print("Error! the class data structure is wrong.".to_string());
+                    self.stack.push(Type::Error("instance-default".to_string()));
                 }
             }
 
-            executor.stack.push(Type::Object(name, object))
+            self.stack.push(Type::Object(name, object))
         }
 
         // Get property of object
         "property" => {
-            let name = executor.pop_stack().get_string();
-            match executor.pop_stack() {
-                Type::Object(_, data) => executor.stack.push(
-                    data.get(name.as_str())
-                        .unwrap_or(&Type::Error("property".to_string()))
-                        .clone(),
-                ),
-                _ => executor.stack.push(Type::Error("not-object".to_string())),
-            }
+            let name = self.pop_stack().get_string();
+            let (_, object) = self.pop_stack().get_object();
+            self.stack.push(
+                object
+                    .get(name.as_str())
+                    .unwrap_or(&Type::Error("property".to_string()))
+                    .clone(),
+            )
         }
 
         // Call the method of object
         "method" => {
-            let method = executor.pop_stack().get_string();
-            match executor.pop_stack() {
-                Type::Object(name, value) => {
-                    let data = Type::Object(name, value.clone());
-                    executor
-                        .memory
-                        .entry("executor".to_string())
-                        .and_modify(|value| *value = data.clone())
-                        .or_insert(data);
+            let method = self.pop_stack().get_string();
+            let (name, value) = self.pop_stack().get_object();
+            let data = Type::Object(name, value.clone());
+            self.memory
+                .entry("self".to_string())
+                .and_modify(|value| *value = data.clone())
+                .or_insert(data);
 
-                    let program: String = match value.get(&method) {
-                        Some(i) => i.to_owned().get_string().to_string(),
-                        None => "".to_string(),
-                    };
+            let program: String = match value.get(&method) {
+                Some(i) => i.to_owned().get_string().to_string(),
+                None => "".to_string(),
+            };
 
-                    executor.evaluate_program(program)
-                }
-                _ => executor.stack.push(Type::Error("not-object".to_string())),
-            }
+            self.evaluate_program(program);
         }
 
         // Modify the property of object
         "modify" => {
-            let data = executor.pop_stack();
-            let property = executor.pop_stack().get_string();
-            match executor.pop_stack() {
-                Type::Object(name, mut value) => {
-                    value
-                        .entry(property)
-                        .and_modify(|value| *value = data.clone())
-                        .or_insert(data.clone());
+            let data = self.pop_stack();
+            let property = self.pop_stack().get_string();
+            let (name, mut value) = self.pop_stack().get_object();
+            value
+                .entry(property)
+                .and_modify(|value| *value = data.clone())
+                .or_insert(data.clone());
 
-                    executor.stack.push(Type::Object(name, value))
-                }
-                _ => executor.stack.push(Type::Error("not-object".to_string())),
-            }
+            self.stack.push(Type::Object(name, value))
         }
 
         // Get all of properties
-        "all" => match executor.pop_stack() {
-            Type::Object(_, data) => executor.stack.push(Type::List(
-                data.keys()
+        "all" => {
+            let (_, value) = self.pop_stack().get_object();
+            self.stack.push(Type::List(
+                value
+                    .keys()
                     .map(|x| Type::String(x.to_owned()))
                     .collect::<Vec<Type>>(),
-            )),
-            _ => executor.stack.push(Type::Error("not-object".to_string())),
-        },
+            ));
+        }
 
         // Commands of external cooperation processing
 
