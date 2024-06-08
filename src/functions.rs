@@ -574,7 +574,7 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                 i += step;
             }
 
-            self.stack.push(Type::List(range));
+            executor.stack.push(Type::List(range));
         }
 
         // Get length of list
