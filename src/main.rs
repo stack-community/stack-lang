@@ -12,11 +12,16 @@ fn main() {
     let app = App::new("Stack")
         .version("1.12.0")
         .author("Stack Programming Community")
-        .about("The powerful script language designed with a stack oriented approach for efficient execution. ")
+        .about("Powerful script language with stack-oriented approach")
         .arg(Arg::new("script")
             .index(1)
             .value_name("FILE")
             .help("Sets the script file to execution")
+            .takes_value(true))
+        .arg(Arg::new("one-liner")
+            .long("one-liner")
+            .short('l')
+            .help("One-liner script execution")
             .takes_value(true))
         .arg(Arg::new("debug")
             .short('d')
@@ -43,6 +48,14 @@ fn main() {
                     return;
                 }
             })
+        }
+    } else if let Some(code) = matches.value_of("one-liner") {
+        if matches.is_present("debug") {
+            let mut stack = Executor::new(Mode::Debug);
+            stack.evaluate_program(code.to_string());
+        } else {
+            let mut stack = Executor::new(Mode::Script);
+            stack.evaluate_program(code.to_string());
         }
     } else {
         // Show a title
