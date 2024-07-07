@@ -1074,6 +1074,21 @@ pub fn execute_command(executor: &mut Executor, command: String) {
             }
         }
 
+        "break-point" => {
+            if let Mode::Debug = executor.mode {
+                executor.log_print("Get into the break point\n".to_string());
+                loop {
+                    executor.evaluate_program(input("Debug commands: "));
+                    let mut state = executor.pop_stack();
+                    if state.get_string() == "continue" {
+                        break
+                    } else {
+                        executor.stack.push(state);
+                    }
+                }
+            }
+        }
+
         // If it is not recognized as a command, use it as a string.
         _ => executor.stack.push(Type::String(command)),
     }
