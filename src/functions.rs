@@ -1079,7 +1079,7 @@ pub fn execute_command(executor: &mut Executor, command: String) {
                 executor.log_print("Get into the break point\n".to_string());
                 loop {
                     let debug_command = input("Debug commands: ");
-                    if debug_command == "continue" {
+                    if debug_command.is_empty() {
                         break
                     } 
                     executor.evaluate_program(debug_command);
