@@ -1,2 +1,2 @@
 cargo build --release
-cp ./target/release/stack-lang/stack ./stack-lang
+cp ./target/release/stack ./stack-lang
